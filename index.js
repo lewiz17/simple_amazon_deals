@@ -1,7 +1,11 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+const path = require('path');
 const PORT = process.env.PORT || 3000;
+
+// Servir archivos estáticos desde la misma ruta
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Obtener dominios permitidos desde environment variables
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
@@ -36,10 +40,15 @@ const apiRouter = express.Router();
 // Aplicar el middleware a todas las rutas del router
 apiRouter.use(validateDomain);
 
+// Ruta principal que sirve el HTML
+apiRouter.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Endpoint 1: Listado de productos
 apiRouter.get('/products', async (req, res) => {
     try {
-        const API_URL = 'https://r.jina.ai/https://www.amazon.com/deals?language=es&_encoding=UTF8&discounts-widget=%22{\%22state\%22:{\%22rangeRefinementFilters\%22:{\%22percentOff\%22:{\%22min\%22:20,\%22max\%22:80}}},\%22version\%22:1}%22';
+        const API_URL = 'https://r.jina.ai/https://www.amazon.com/deals?language=es_US&_encoding=UTF8&discounts-widget=%22{\%22state\%22:{\%22rangeRefinementFilters\%22:{\%22percentOff\%22:{\%22min\%22:20,\%22max\%22:80}}},\%22version\%22:1}%22';
 
         const resultado = await getAmazonProducts(API_URL);
 
