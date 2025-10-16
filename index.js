@@ -1,13 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const fs = require('fs');
-const path = require('path');
 const PORT = process.env.PORT || 3000;
-
-// Leer el HTML una vez al iniciar (más eficiente)
-const htmlContent = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
-
 
 // Obtener dominios permitidos desde environment variables
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
@@ -41,11 +35,6 @@ const apiRouter = express.Router();
 
 // Aplicar el middleware a todas las rutas del router
 apiRouter.use(validateDomain);
-
-// Ruta principal que sirve el HTML
-apiRouter.get('/', (req, res) => {
-    res.type('html').send(htmlContent);
-});
 
 // Endpoint 1: Listado de productos
 apiRouter.get('/products', async (req, res) => {
