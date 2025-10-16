@@ -3,37 +3,31 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const ALLOWED_DOMAINS = process.env.ALLOWED_DOMAINS ?
-    process.env.ALLOWED_DOMAINS.split(',') :
-    ['http://localhost:3000'];
+// Obtener dominios permitidos desde environment variables
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',') 
+    : ['http://localhost:3000'];
 
 function validateDomain(req, res, next) {
-    const origin = req.get('origin');
-    const host = req.get('host');
-
-    console.log('🔍 Headers recibidos:');
-    console.log('- Origin:', origin);
-    console.log('- Host:', host);
-    console.log('- ALLOWED_DOMAINS:', ALLOWED_DOMAINS);
-
-    if (!origin) {
-        console.log('⚠️  No hay origin header');
-        if (host && (host.includes('localhost:3000') || host.includes('127.0.0.1:3000'))) {
-            console.log('✅ Permitiendo localhost sin origin');
-            res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-            return next();
-        }
-        return res.status(403).json({ error: 'Acceso no autorizado' });
+    const origin = req.headers.origin;
+    
+    // Verificar si el origin está permitido
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    } else if (process.env.NODE_ENV !== 'production') {
+        // En desarrollo, permitir cualquier origen
+        res.header('Access-Control-Allow-Origin', '*');
     }
-
-    const isAllowed = ALLOWED_DOMAINS.some(domain => origin === domain);
-    console.log('✅ Dominio permitido?:', isAllowed);
-
-    if (!isAllowed) {
-        return res.status(403).json({ error: 'Dominio no permitido' });
+    
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Manejar preflight OPTIONS
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
-
-    res.header('Access-Control-Allow-Origin', origin);
+    
     next();
 }
 
