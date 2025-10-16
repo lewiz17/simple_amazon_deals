@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=${process.env.GA_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${process.env.GA_ID}');
+    </script>
+
     <style>
         /* Estilos CSS Puros y Mejoras */
 
@@ -136,7 +145,7 @@
             </div>
 
             <div id="saved-offers-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                </div>
+            </div>
 
             <div id="no-saved-offers" class="text-center py-8">
                 <i class="fas fa-bookmark text-purple-400 text-6xl mb-4"></i>
