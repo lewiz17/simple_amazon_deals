@@ -136,7 +136,7 @@ function buildDataProductUrl(productUrl, selectors = null) {
     const selectorParam = selectors || defaultSelectors;
 
     // Codificar la URL del producto y los selectores
-    const encodedProductUrl = encodeURIComponent(`${productUrl}?language=es_US`);
+    const encodedProductUrl = encodeURIComponent(`${productUrl}&language=es_US`);
 
     return `${baseUrl}?url=${encodedProductUrl}&selector=${encodeURIComponent(selectorParam)}&scrape=text&pretty=true`;
 }
@@ -147,6 +147,8 @@ async function scrapeAmazonProduct(productUrl, customSelectors = null) {
         console.log(`🔄 Scrapeando producto: ${productUrl}`);
 
         const scraperUrl = buildDataProductUrl(productUrl, customSelectors);
+
+        console.log(scraperUrl);
 
         const response = await axios.get(scraperUrl, {
             timeout: 30000,
