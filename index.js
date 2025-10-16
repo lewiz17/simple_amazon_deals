@@ -1,7 +1,16 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const __dirname = path.resolve();
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.use('/', (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // Obtener dominios permitidos desde environment variables
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
