@@ -10,12 +10,15 @@ const PORT = process.env.PORT || 3000;
 const __dirname = path.resolve();
 
 
-const html = fs.readFileSync("index.html", "utf8");
-const replaced = html.replace(/__GA_ID__/g, process.env.GA_ID);
-fs.writeFileSync("public/index.html", replaced);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+
+
+const html = fs.readFileSync("public/index.html", "utf8");
+const replaced = html.replace(/__GA_ID__/g, process.env.GA_ID);
+fs.writeFileSync("public/index.html", replaced);
 
 
 // Obtener dominios permitidos desde environment variables
