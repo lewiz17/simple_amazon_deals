@@ -101,6 +101,20 @@ apiRouter.get('/product', async (req, res) => {
     }
 });
 
+
+apiRouter.get('gaid', async (req, res) => {
+    const gaId = process.env.GA_ID;
+    
+    if (!gaId) {
+        return res.status(200).json({ enabled: false });
+    }
+    
+    res.status(200).json({ 
+        enabled: true,
+        gaId: gaId
+    });
+})
+
 // Endpoint de salud
 app.get('/health', (req, res) => {
     res.json({
