@@ -102,18 +102,27 @@ apiRouter.get('/product', async (req, res) => {
 });
 
 
-apiRouter.get('gaid', async (req, res) => {
+apiRouter.get('/gaid', async (req, res) => {
     const gaId = process.env.GA_ID;
     
-    if (!gaId) {
-        return res.status(200).json({ enabled: false });
+    // Validar formato del GA ID (ej: G-XXXXXXXXXX o UA-XXXXXXXX-X)
+    const isValidGaId = gaId && /^(G-|UA-|GTM-)[A-Z0-9-]+$/i.test(gaId);
+    
+    
+    if (!isValidGaId) {
+        return res.status(200).json({ 
+            enabled: false,
+            message: 'Google Analytics not configured'
+        });
     }
     
     res.status(200).json({ 
         enabled: true,
-        gaId: gaId
+        gaId: gaId,
+        measurementId: gaId.startsWith('G-') ? gaId : undefined,
+        trackingId: gaId.startsWith('UA-') ? gaId : undefined
     });
-})
+});
 
 // Endpoint de salud
 app.get('/health', (req, res) => {
