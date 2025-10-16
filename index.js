@@ -409,9 +409,10 @@ async function getAmazonProducts(apiUrl) {
     }
 }
 
-module.exports = {
-    getAmazonProducts,
-    parseAmazonMarkdownEnhanced,
-    scrapeAmazonProduct,
-    app
-};
+// Exportar la app como default para Vercel
+module.exports = app;
+
+// Exportar funciones como propiedades adicionales
+module.exports.getAmazonProducts = getAmazonProducts;
+module.exports.parseAmazonMarkdownEnhanced = parseAmazonMarkdownEnhanced;
+module.exports.scrapeAmazonProduct = scrapeAmazonProduct;
