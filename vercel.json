@@ -11,8 +11,5 @@
             "src": "/(.*)",
             "dest": "/"
         }
-    ],
-    "hooks": {
-        "prebuild": "sed -i \"s/__GA_ID__/$GA_ID/g\" index.html"
-    }
+    ]
   }
