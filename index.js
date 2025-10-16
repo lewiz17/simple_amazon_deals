@@ -1,20 +1,22 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+const fs = require('fs');
 const path = require('path');
 const PORT = process.env.PORT || 3000;
 
-// Servir archivos estáticos desde la misma ruta
-app.use(express.static(path.join(__dirname, 'public')));
+// Leer el HTML una vez al iniciar (más eficiente)
+const htmlContent = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+
 
 // Obtener dominios permitidos desde environment variables
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',') 
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
     : ['http://localhost:3000'];
 
 function validateDomain(req, res, next) {
     const origin = req.headers.origin;
-    
+
     // Verificar si el origin está permitido
     if (origin && ALLOWED_ORIGINS.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
@@ -22,16 +24,16 @@ function validateDomain(req, res, next) {
         // En desarrollo, permitir cualquier origen
         res.header('Access-Control-Allow-Origin', '*');
     }
-    
+
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.header('Access-Control-Allow-Credentials', 'true');
-    
+
     // Manejar preflight OPTIONS
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
-    
+
     next();
 }
 
@@ -41,9 +43,11 @@ const apiRouter = express.Router();
 apiRouter.use(validateDomain);
 
 // Ruta principal que sirve el HTML
-apiRouter.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/', (req, res) => {
+    res.type('html').send(htmlContent);
 });
+
+
 
 // Endpoint 1: Listado de productos
 apiRouter.get('/products', async (req, res) => {
