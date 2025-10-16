@@ -136,7 +136,7 @@ function buildDataProductUrl(productUrl, selectors = null) {
     const selectorParam = selectors || defaultSelectors;
 
     // Codificar la URL del producto y los selectores
-    const encodedProductUrl = encodeURIComponent(`${productUrl}&language=es_US`);
+    const encodedProductUrl = encodeURIComponent(`${productUrl}`);
 
     return `${baseUrl}?url=${encodedProductUrl}&selector=${encodeURIComponent(selectorParam)}&scrape=text&pretty=true`;
 }
@@ -267,7 +267,7 @@ function buildCustomUrl(handle, productId, tag = 'topbeauty0d-20', language = 'e
         const encodedHandle = encodeURIComponent(handle).replace(/%20/g, '+');
 
         // Construir la URL en el formato deseado
-        const customUrl = `https://www.amazon.com/${encodedHandle}/dp/${productId}?tag=${tag}&language=${language}`;
+        const customUrl = `https://www.amazon.com/${encodedHandle}/dp/${productId}?tag=${tag}&language=${language}&currency=COP`;
 
         return customUrl;
     } catch (error) {
