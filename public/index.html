@@ -90,6 +90,14 @@
             /* Glow azul al enfocar */
             outline: none;
         }
+
+        /* 7. Estilo para el botón de "Guardado" */
+        .saved-btn {
+            background-color: #f59e0b;
+            /* Color amarillo */
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+            cursor: default;
+        }
     </style>
 </head>
 
@@ -114,6 +122,30 @@
             </div>
         </div>
 
+        <div id="saved-offers-section" class="mb-16 hidden animate__animated animate__fadeIn">
+            <h2 class="text-4xl font-bold text-white mb-6 text-center lg:text-left">
+                🛒 Tus Ofertas Guardadas
+                <span id="saved-count" class="text-indigo-400 text-2xl ml-2"></span>
+            </h2>
+
+            <div class="flex justify-center lg:justify-start mb-6">
+                <button id="clear-saved-btn"
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hidden">
+                    <i class="fas fa-trash-alt mr-2"></i> Limpiar toda la lista
+                </button>
+            </div>
+
+            <div id="saved-offers-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                </div>
+
+            <div id="no-saved-offers" class="text-center py-8">
+                <i class="fas fa-bookmark text-purple-400 text-6xl mb-4"></i>
+                <h3 class="text-2xl font-bold text-white mb-2">Aún no has guardado ninguna oferta.</h3>
+                <p class="text-purple-200">Usa el botón "Guardar para más tarde" en las ofertas destacadas.</p>
+            </div>
+
+            <hr class="border-purple-700 my-10">
+        </div>
         <div id="loading" class="flex flex-col justify-center items-center py-24">
             <div class="loading-spinner"></div>
             <span class="mt-4 text-white text-xl animate__animated animate__pulse animate__infinite">Cargando ofertas al
@@ -143,12 +175,14 @@
     </div>
 
     <script>
+        // Clave de localStorage para la lista de productos guardados
+        const SAVED_PRODUCTS_KEY = 'savedOffersList';
+
         // Almacén global para todos los productos cargados
         let allProducts = [];
 
         // Función auxiliar para eliminar acentos (diacríticos) y convertir a minúsculas
         function removeAccents(str) {
-            // Normaliza la cadena (descomposición canónica) y elimina los diacríticos
             return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         }
 
@@ -167,43 +201,186 @@
             return title.substring(0, maxLength) + '...';
         }
 
-        // Función para crear una card de producto
+        /**
+         * LÓGICA DE GESTIÓN DE OFERTAS GUARDADAS (LOCALSTORAGE)
+         */
+
+        // 1. Obtiene la lista de ofertas guardadas desde localStorage
+        function getSavedOffers() {
+            try {
+                const saved = localStorage.getItem(SAVED_PRODUCTS_KEY);
+                return saved ? JSON.parse(saved) : [];
+            } catch (e) {
+                console.error("Error leyendo localStorage:", e);
+                return [];
+            }
+        }
+
+        // 2. Guarda la lista de ofertas en localStorage
+        function saveOffersToLocalStorage(offers) {
+            try {
+                localStorage.setItem(SAVED_PRODUCTS_KEY, JSON.stringify(offers));
+                renderSavedOffers(); // Volver a dibujar la lista al guardar
+            } catch (e) {
+                console.error("Error escribiendo en localStorage:", e);
+            }
+        }
+
+        // 3. Verifica si un producto ya está guardado (usando 'amznUrl' como identificador único)
+        function isProductSaved(productUrl) {
+            const savedOffers = getSavedOffers();
+            // Asegúrate de que productUrl no sea undefined/null antes de la comparación
+            return savedOffers.some(offer => offer.amznUrl && offer.amznUrl === productUrl);
+        }
+
+        // 4. Agrega un producto a la lista de guardados
+        function addProductToSaved(product) {
+            if (isProductSaved(product.amznUrl)) {
+                console.log("El producto ya está guardado:", product.title);
+                return;
+            }
+
+            const savedOffers = getSavedOffers();
+            savedOffers.push(product);
+            saveOffersToLocalStorage(savedOffers);
+
+            // Actualizar el estado del botón en la lista principal
+            updateSaveButtonState(product.amznUrl, true);
+        }
+
+        // 5. Elimina un producto de la lista de guardados (por su URL única)
+        function removeProductFromSaved(productUrl) {
+            const savedOffers = getSavedOffers();
+            const newOffers = savedOffers.filter(offer => offer.amznUrl !== productUrl);
+
+            saveOffersToLocalStorage(newOffers);
+
+            // Actualizar el estado del botón en la lista principal
+            updateSaveButtonState(productUrl, false);
+        }
+
+        // 6. Limpia toda la lista guardada
+        function clearAllSavedOffers() {
+            localStorage.removeItem(SAVED_PRODUCTS_KEY);
+            renderSavedOffers();
+            // Restablecer todos los botones de la cuadrícula principal a "Guardar"
+            document.querySelectorAll('.save-offer-btn').forEach(btn => {
+                btn.classList.remove('saved-btn');
+                btn.removeAttribute('disabled');
+                btn.innerHTML = `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
+            });
+        }
+
+        // 7. Renderiza la sección de ofertas guardadas
+        function renderSavedOffers() {
+            const savedOffers = getSavedOffers();
+            const listElement = document.getElementById('saved-offers-list');
+            const noOffersElement = document.getElementById('no-saved-offers');
+            const sectionElement = document.getElementById('saved-offers-section');
+            const clearBtn = document.getElementById('clear-saved-btn');
+            const savedCount = document.getElementById('saved-count');
+
+            savedCount.textContent = `(${savedOffers.length})`;
+
+            if (savedOffers.length === 0) {
+                listElement.innerHTML = '';
+                noOffersElement.classList.remove('hidden');
+                clearBtn.classList.add('hidden');
+                sectionElement.classList.add('hidden');
+                return;
+            }
+
+            sectionElement.classList.remove('hidden');
+            noOffersElement.classList.add('hidden');
+            clearBtn.classList.remove('hidden');
+
+            const offersHTML = savedOffers.map(product => createSavedCard(product)).join('');
+            listElement.innerHTML = offersHTML;
+
+            // Agregar event listeners de eliminación para las tarjetas guardadas
+            document.querySelectorAll('.remove-saved-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const urlToRemove = e.currentTarget.dataset.url;
+                    removeProductFromSaved(urlToRemove);
+                });
+            });
+        }
+
+        // 8. Actualiza el texto y estilo del botón de guardar en la cuadrícula principal
+        function updateSaveButtonState(productUrl, isSaved) {
+            // Buscamos el botón por su atributo data-url
+            const button = document.querySelector(`.save-offer-btn[data-url="${productUrl}"]`);
+            if (button) {
+                if (isSaved) {
+                    button.classList.add('saved-btn');
+                    button.setAttribute('disabled', 'true'); // Deshabilitar para evitar múltiples guardados
+                    button.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Guardado`;
+                } else {
+                    button.classList.remove('saved-btn');
+                    button.removeAttribute('disabled');
+                    button.innerHTML = `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
+                }
+            }
+        }
+
+        /**
+         * FUNCIONES DE CREACIÓN DE CARDS
+         */
+
+        // Función para crear la card de producto (usada en la cuadrícula principal)
         function createProductCard(product) {
+            const isSaved = isProductSaved(product.amznUrl);
+            const buttonClass = isSaved ? 'saved-btn' : 'bg-green-600 hover:bg-green-700';
+            const buttonText = isSaved ? `<i class="fas fa-check-circle mr-2"></i> Guardado` : `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
+
+            // Necesitamos un identificador único para guardar y eliminar
+            // Usamos JSON.stringify y reemplazamos comillas para asegurar la integridad de data-product
+            const productData = JSON.stringify(product).replace(/"/g, '&quot;');
+
             return `
                 <div class="card-hover glass-effect rounded-2xl overflow-hidden h-full flex flex-col shadow-2xl animate__animated animate__fadeInUp">
-                    
+
                     <div class="relative image-container overflow-hidden bg-gray-800">
-                        
+
                         <div class="discount-badge">
                             <span class="neon-discount bg-red-600 text-white font-extrabold px-4 py-2 rounded-full shadow-xl transform rotate-3 inline-block">
                                 ${formatDiscount(product.discount)}
                             </span>
                         </div>
-                        
+
                         <div class="absolute inset-0 bg-black/10 transition-colors duration-300"></div>
-    
-                        <img 
-                            src="${product.image_url}" 
+
+                        <img
+                            src="${product.image_url}"
                             alt="${product.title}"
                             class="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                             onerror="this.src='https://via.placeholder.com/400x400/111827/ffffff?text=Producto+en+Oferta'"
                         >
                     </div>
-                    
+
                     <div class="p-5 flex-grow flex flex-col">
                         <h3 class="text-white font-bold text-xl mb-3 line-clamp-2">
                             ${shortenTitle(product.title)}
                         </h3>
-                        
+
                         <p class="text-indigo-200 text-sm mb-5 flex-grow line-clamp-3">
                             ${product.description || 'Producto en oferta exclusiva. ¡Aprovecha ahora!'}
                         </p>
-                        
-                        <div class="mt-auto pt-4 border-t border-white/10">
-                            <a 
-                                href="${product.amznUrl}" 
-                                target="_blank" 
-                                class="offer-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.05] shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50"
+
+                        <div class="mt-auto pt-4 border-t border-white/10 space-y-3">
+                            <button
+                                class="save-offer-btn block w-full text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg ${buttonClass}"
+                                data-product='${productData}'
+                                data-url="${product.amznUrl}"
+                                ${isSaved ? 'disabled' : ''}
+                            >
+                                ${buttonText}
+                            </button>
+
+                            <a
+                                href="${product.amznUrl}"
+                                target="_blank"
+                                class="offer-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.03] shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50"
                             >
                                 ¡Ver Oferta Ahora!
                                 <i class="fas fa-arrow-circle-right ml-2"></i>
@@ -214,7 +391,66 @@
             `;
         }
 
-        // Función para renderizar un conjunto de productos
+        // Función para crear la card de producto GUARDADO (para la lista local)
+        function createSavedCard(product) {
+            return `
+                <div class="card-hover glass-effect rounded-2xl overflow-hidden h-full flex flex-col shadow-2xl animate__animated animate__fadeInUp">
+
+                    <div class="relative image-container overflow-hidden bg-gray-800">
+
+                        <div class="discount-badge">
+                            <span class="neon-discount bg-red-600 text-white font-extrabold px-4 py-2 rounded-full shadow-xl transform rotate-3 inline-block">
+                                ${formatDiscount(product.discount)}
+                            </span>
+                        </div>
+
+                        <div class="absolute inset-0 bg-black/10 transition-colors duration-300"></div>
+
+                        <img
+                            src="${product.image_url}"
+                            alt="${product.title}"
+                            class="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                            onerror="this.src='https://via.placeholder.com/400x400/111827/ffffff?text=Producto+en+Oferta'"
+                        >
+                    </div>
+
+                    <div class="p-5 flex-grow flex flex-col">
+                        <h3 class="text-white font-bold text-xl mb-3 line-clamp-2">
+                            ${shortenTitle(product.title)}
+                        </h3>
+
+                        <p class="text-indigo-200 text-sm mb-5 flex-grow line-clamp-3">
+                            ${product.description || 'Producto en oferta exclusiva. ¡Aprovecha ahora!'}
+                        </p>
+
+                        <div class="mt-auto pt-4 border-t border-white/10 space-y-3">
+
+                            <button
+                                class="remove-saved-btn block w-full bg-yellow-600 hover:bg-yellow-700 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg"
+                                data-url="${product.amznUrl}"
+                            >
+                                <i class="fas fa-times-circle mr-2"></i> Eliminar de la lista
+                            </button>
+
+                            <a
+                                href="${product.amznUrl}"
+                                target="_blank"
+                                class="offer-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.03] shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50"
+                            >
+                                ¡Ver Oferta Ahora!
+                                <i class="fas fa-arrow-circle-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * LÓGICA DE RENDERIZADO Y FILTRO
+         */
+
+        // Función para renderizar un conjunto de productos (principal)
         function renderProducts(products) {
             const productsGrid = document.getElementById('products-grid');
             const noResultsElement = document.getElementById('no-results');
@@ -228,12 +464,27 @@
 
                 const productsHTML = products.map(createProductCard).join('');
                 productsGrid.innerHTML = productsHTML;
+
+                // Agregar listeners a los nuevos botones de 'Guardar para más tarde'
+                document.querySelectorAll('.save-offer-btn').forEach(button => {
+                    // Solo añadir listener si el botón NO está deshabilitado (no está guardado)
+                    if (!button.hasAttribute('disabled')) {
+                        button.addEventListener('click', (e) => {
+                            try {
+                                // Parseamos los datos del producto
+                                const productData = JSON.parse(e.currentTarget.dataset.product.replace(/&quot;/g, '"'));
+                                addProductToSaved(productData);
+                            } catch (error) {
+                                console.error("Error al parsear datos del producto:", error);
+                            }
+                        });
+                    }
+                });
             }
         }
 
         // Función para filtrar los productos (LÓGICA DE BÚSQUEDA INSENSIBLE A ACENTOS)
         function filterProducts(searchTerm) {
-            // Normaliza el término de búsqueda
             const normalizedTerm = removeAccents(searchTerm);
 
             if (normalizedTerm === '') {
@@ -241,14 +492,11 @@
                 return;
             }
 
-            // Filtra los productos comparando los títulos también normalizados
             const filtered = allProducts.filter(product => {
                 if (!product.title) return false;
 
-                // Normaliza el título del producto antes de la comparación
                 const normalizedTitle = removeAccents(product.title);
 
-                // Verifica si el título normalizado incluye el término normalizado
                 return normalizedTitle.includes(normalizedTerm);
             });
 
@@ -267,7 +515,7 @@
                 errorElement.classList.add('hidden');
                 document.getElementById('no-results').classList.add('hidden');
 
-                // Hacer la petición a tu API endpoint
+                // Uso del endpoint original: fetch('/api/products')
                 const response = await fetch('/api/products');
 
                 if (!response.ok) {
@@ -283,8 +531,9 @@
 
                     loadingElement.classList.add('hidden');
 
-                    // Renderizar la lista inicial (todos los productos)
+                    // Renderizar la lista principal y la lista de guardados
                     renderProducts(allProducts);
+                    renderSavedOffers();
 
                     productsGrid.classList.add('animate__animated', 'animate__fadeInUp');
 
@@ -307,6 +556,10 @@
 
             // Configurar botón de reintento
             document.getElementById('retry-btn').addEventListener('click', loadProducts);
+
+            // Configurar botón de limpiar toda la lista
+            document.getElementById('clear-saved-btn').addEventListener('click', clearAllSavedOffers);
+
 
             // Configurar el input de búsqueda para filtrar al escribir
             const searchInput = document.getElementById('search-input');
