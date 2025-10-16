@@ -43,11 +43,9 @@ const apiRouter = express.Router();
 apiRouter.use(validateDomain);
 
 // Ruta principal que sirve el HTML
-app.get('/', (req, res) => {
+apiRouter.get('/', (req, res) => {
     res.type('html').send(htmlContent);
 });
-
-
 
 // Endpoint 1: Listado de productos
 apiRouter.get('/products', async (req, res) => {
