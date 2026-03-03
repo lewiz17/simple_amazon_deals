@@ -352,9 +352,8 @@
         /* IMAGE AREA */
         .card-img-wrap {
             position: relative;
-            /* Forzamos un tamaño fijo de alto para que la imagen se vea bien */
-            height: 200px;
-            background: #181a2a;
+            aspect-ratio: 4 / 3;
+            background: #0e1020;
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -362,8 +361,8 @@
         .card-img-wrap img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            padding: 14px;
+            object-fit: cover;
+            object-position: center;
             transition: transform .45s ease;
         }
 
@@ -487,6 +486,7 @@
             line-height: 1.45;
             display: -webkit-box;
             -webkit-line-clamp: 3;
+            line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -779,13 +779,34 @@
                 gap: 10px;
             }
 
-            .card-img-wrap {
-                height: 160px;
-            }
-
             .price-now {
                 font-size: 1.1rem;
             }
+        }
+
+        /* CATEGORIES */
+        #categories-wrap {
+            margin-top: 10px;
+            display: none;
+        }
+
+        #categories-wrap.has-cats {
+            display: block;
+        }
+
+        .cats-label {
+            font-size: .7rem;
+            color: var(--text2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 7px;
+        }
+
+        .cats-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         @media (max-width: 340px) {
@@ -841,6 +862,11 @@
                 <button class="chip" data-price="20-50">$20–$50</button>
                 <button class="chip" data-price="over50">&gt; $50</button>
             </div>
+            <!-- CATEGORIAS DINÁMICAS -->
+            <div id="categories-wrap">
+                <div class="cats-label">Categoría</div>
+                <div class="cats-row" id="categories-row"></div>
+            </div>
         </div>
 
         <!-- GUARDADOS -->
@@ -886,7 +912,7 @@
     <script>
         // ── CONFIG ──────────────────────────────────────────────────────────
         const API_KEY = 'wz-secret-2024';
-        const LIMIT = 24;
+        const LIMIT = 20;
         const SAVED_KEY = 'wiz_saved_v2';
         const AMZ_TAG = 'wizofertas-20';
 
@@ -951,9 +977,12 @@
         let isLoading = false;
         let hasMore = true;
         let searchTerm = '';
+        let apiQuery = '';   // término actualmente usado en la API
         let activeFilter = 'all';
         let priceFilter = 'all';
+        let activeCategory = '';    // '' = todas las categorías
         let debounceTimer;
+        let searchController = null;  // AbortController para cancelar búsquedas anteriores
 
         // Datos de geo del visitante
         let geoInfo = null;  // { countryCode, language, currency, amzCurrency, flag, name }
@@ -1190,15 +1219,42 @@
             document.getElementById('stat-coupons').textContent = coupons + '+';
         }
 
+        // ── CATEGORIES ────────────────────────────────────────────────────
+        function renderCategories(products) {
+            const wrap = document.getElementById('categories-wrap');
+            const row = document.getElementById('categories-row');
+            // Extraer categorías únicas no vacías, ordenadas por frecuencia
+            const freq = {};
+            products.forEach(p => { if (p.category) freq[p.category] = (freq[p.category] || 0) + 1; });
+            const cats = Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .map(([c]) => c);
+
+            if (!cats.length) { wrap.classList.remove('has-cats'); return; }
+            wrap.classList.add('has-cats');
+
+            row.innerHTML = `<button class="chip ${activeCategory === '' ? 'active' : ''}" data-cat="">Todas</button>` +
+                cats.map(c => `<button class="chip ${activeCategory === c ? 'active' : ''}" data-cat="${c.replace(/"/g, '&quot;')}">${c}</button>`).join('');
+
+            row.querySelectorAll('[data-cat]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeCategory = btn.dataset.cat;
+                    row.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === activeCategory));
+                    applyFilters();
+                });
+            });
+        }
+
         // ── FILTROS + RENDER ──────────────────────────────────────────────
         function applyFilters() {
             const term = norm(searchTerm);
-            const isFiltering = term || activeFilter !== 'all' || priceFilter !== 'all';
+            const isFiltering = term || activeFilter !== 'all' || priceFilter !== 'all' || activeCategory;
 
             const toShow = isFiltering ? allProducts.filter(p => {
                 if (term) {
                     if (!norm(`${p.title} ${p.category || ''} ${p.merchant_name || ''}`).includes(term)) return false;
                 }
+                if (activeCategory && p.category !== activeCategory) return false;
                 if (activeFilter === 'coupon' && !p.has_coupon) return false;
                 if (activeFilter === 'lightning' && !p.has_lightning_deal) return false;
                 if (activeFilter === 'pricedrop' && !p.has_price_drop) return false;
@@ -1249,9 +1305,12 @@
         }
 
         // ── API ───────────────────────────────────────────────────────────
-        async function fetchPage(page) {
-            const res = await fetch(`/api/products?page=${page}&limit=${LIMIT}`, {
-                headers: { 'X-API-Key': API_KEY }
+        async function fetchPage(page, query = '') {
+            const params = new URLSearchParams({ page, limit: LIMIT, t: Date.now() });
+            if (query) params.set('query', query);
+            const res = await fetch(`/api/products?${params}`, {
+                headers: { 'X-API-Key': API_KEY },
+                cache: 'no-store'
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const json = await res.json();
@@ -1263,14 +1322,14 @@
             document.getElementById('initial-loading').style.display = 'flex';
             document.getElementById('error-state').style.display = 'none';
             document.getElementById('products-grid').innerHTML = '';
-            allProducts = []; currentPage = 1; hasMore = true;
+            allProducts = []; currentPage = 1; hasMore = true; apiQuery = '';
             try {
                 const data = await fetchPage(1);
                 document.getElementById('initial-loading').style.display = 'none';
                 if (!data.products?.length) { document.getElementById('no-results').style.display = 'block'; return; }
                 allProducts = data.products;
                 hasMore = data.products_count >= LIMIT;
-                updateStats(); applyFilters();
+                updateStats(); renderCategories(allProducts); applyFilters();
             } catch (err) {
                 console.error(err);
                 document.getElementById('initial-loading').style.display = 'none';
@@ -1280,12 +1339,13 @@
 
         async function loadNextPage() {
             if (isLoading || !hasMore) return;
-            if (norm(searchTerm) || activeFilter !== 'all' || priceFilter !== 'all') return;
+            // Si hay filtros locales activos (sin API query), no hacer scroll
+            if (!apiQuery && (norm(searchTerm) || activeFilter !== 'all' || priceFilter !== 'all')) return;
             isLoading = true;
             document.getElementById('page-loading').style.display = 'flex';
             try {
                 currentPage++;
-                const data = await fetchPage(currentPage);
+                const data = await fetchPage(currentPage, apiQuery);
                 hasMore = data.products_count >= LIMIT;
                 if (data.products?.length) {
                     allProducts = [...allProducts, ...data.products];
@@ -1299,6 +1359,53 @@
             }
         }
 
+        // Búsqueda en la API (para términos ≥3 caracteres)
+        async function searchViaApi(query) {
+            if (searchController) searchController.abort();
+            searchController = new AbortController();
+
+            const inp = document.getElementById('search-input');
+            inp.style.opacity = '.6';
+
+            const grid = document.getElementById('products-grid');
+            const noRes = document.getElementById('no-results');
+            grid.innerHTML = '';
+            noRes.style.display = 'none';
+            document.getElementById('page-loading').style.display = 'flex';
+
+            isLoading = false; hasMore = true; currentPage = 1; apiQuery = query;
+
+            try {
+                const params = new URLSearchParams({ page: 1, limit: LIMIT, query });
+                const res = await fetch(`/api/products?${params}`, {
+                    headers: { 'X-API-Key': API_KEY },
+                    signal: searchController.signal
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.error);
+                const data = json.data;
+
+                document.getElementById('page-loading').style.display = 'none';
+                allProducts = data.products || [];
+                hasMore = (data.products_count || 0) >= LIMIT;
+
+                if (!allProducts.length) {
+                    noRes.style.display = 'block';
+                } else {
+                    grid.innerHTML = allProducts.map(p => createCard(p)).join('');
+                    attachListeners(grid);
+                }
+                updateStats(); renderCategories(allProducts);
+            } catch (err) {
+                if (err.name === 'AbortError') return;  // búsqueda cancelada = normal
+                console.error('Error en búsqueda API:', err);
+                document.getElementById('page-loading').style.display = 'none';
+                showToast('Error al buscar. Intenta de nuevo.', '⚠️', 'var(--red)');
+            } finally {
+                inp.style.opacity = '1';
+            }
+        }
         // ── INFINITE SCROLL ───────────────────────────────────────────────
         new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) loadNextPage();
@@ -1309,13 +1416,30 @@
             searchTerm = e.target.value;
             document.getElementById('search-clear').style.display = searchTerm ? 'block' : 'none';
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 300);
+
+            if (!searchTerm.trim()) {
+                // Vuelta al modo normal sin query
+                apiQuery = '';
+                if (searchController) searchController.abort();
+                loadFirstPage();
+                return;
+            }
+
+            if (searchTerm.trim().length >= 3) {
+                // Búsqueda API: debounce 500ms para no spamear
+                debounceTimer = setTimeout(() => searchViaApi(searchTerm.trim()), 500);
+            } else {
+                // Menos de 3 chars: filtro local instantáneo
+                apiQuery = '';
+                debounceTimer = setTimeout(applyFilters, 200);
+            }
         });
         document.getElementById('search-clear').addEventListener('click', () => {
             const inp = document.getElementById('search-input');
-            inp.value = ''; searchTerm = '';
+            inp.value = ''; searchTerm = ''; apiQuery = '';
             document.getElementById('search-clear').style.display = 'none';
-            applyFilters(); inp.focus();
+            if (searchController) searchController.abort();
+            loadFirstPage(); inp.focus();
         });
         document.querySelectorAll('[data-filter]').forEach(c => {
             c.addEventListener('click', () => {

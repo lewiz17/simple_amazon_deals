@@ -59,19 +59,39 @@ function mapDealItem(item) {
 }
 
 // Función principal para obtener productos de DealSeek
-export const getAmazonProducts = async (page = 1, limit = 50) => {
+export const getAmazonProducts = async (page = 1, limit = 20, query = '') => {
     try {
-        console.log(`🔄 Obteniendo deals de DealSeek (página ${page}, limit ${limit})...`);
+        console.log(`🔄 Preparando llamada a DealSeek: page=${page}, limit=${limit}, query="${query}"`);
 
-        const params = new URLSearchParams({
-            page,
-            limit,
-            ...DEALSEEK_PARAMS
-        });
+        // Usamos parámetros exactos del URL que funciona, como strings para evitar errores de serialización
+        const params = {
+            page: String(page),
+            limit: String(limit),
+            percentOff: "0",
+            query: query.trim(),
+            sortBy: "recommended",
+            useStackingDiscount: "true",
+            hasCoupon: "true",
+            hasPromoCode: "true",
+            hasLightningDeal: "true",
+            hasExtraDiscount: "true",
+            hasPriceDrop: "true",
+            hasBrandDeal: "false",
+            hasCommissionDeal: "true",
+            hasCreatorConnectionDeal: "false",
+            userId: "18a25b3b-725c-42f8-8136-631afe00d0a5",
+            semantic_search: "true"
+        };
 
-        const url = `${DEALSEEK_BASE_URL}?${params.toString()}`;
+        // Si no hay query, lo quitamos para no enviar "query=" vacío
+        if (!params.query) delete params.query;
 
-        const response = await axios.get(url, {
+        // Log de la URL final reconstruida para comparar
+        const qs = new URLSearchParams(params).toString();
+        console.log(`🔗 URL de llamada: ${DEALSEEK_BASE_URL}?${qs}`);
+
+        const response = await axios.get(DEALSEEK_BASE_URL, {
+            params,
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -79,18 +99,18 @@ export const getAmazonProducts = async (page = 1, limit = 50) => {
             timeout: 15000
         });
 
-        console.log('✅ Datos recibidos, procesando...');
-
-        // La API devuelve un array de deals directamente o en una propiedad
         const rawItems = Array.isArray(response.data)
             ? response.data
             : (response.data.deals || response.data.data || response.data.items || []);
+
+        console.log(`✅ DealSeek respondió con ${rawItems.length} items`);
 
         const products = rawItems.map(mapDealItem);
 
         return {
             page,
             limit,
+            query: query || null,
             products_count: products.length,
             products
         };
@@ -101,144 +121,7 @@ export const getAmazonProducts = async (page = 1, limit = 50) => {
     }
 };
 
-// Función principal para scrapear un producto individual
-export const scrapeAmazonProduct = async (productUrl, customSelectors = null) => {
-    try {
-        console.log(`🔄 Scrapeando producto: ${productUrl}`);
 
-        const scraperUrl = buildDataProductUrl(productUrl, customSelectors);
-
-        const response = await axios.get(scraperUrl, {
-            timeout: 30000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-
-        console.log('✅ Datos obtenidos de la API, formateando...');
-
-        const formattedData = formatProductData(response.data);
-
-        return {
-            success: true,
-            data: formattedData
-        };
-
-    } catch (error) {
-        console.error('❌ Error scrapeando producto:', error.message);
-        return {
-            success: false,
-            url: productUrl,
-            error: error.message,
-            data: null
-        };
-    }
-};
-
-// Función para construir la URL de la API de scraping
-function buildDataProductUrl(productUrl, selectors = null) {
-    const baseUrl = 'https://web.scraper.workers.dev/';
-
-    const defaultSelectors = [
-        '#productTitle',
-        '.savingsPercentage',
-        '.po-brand .a-span9',
-        '.po-special_feature .a-span9',
-        '.po-item_depth_width_height .a-span9',
-        '#feature-bullets .a-list-item',
-        '.priceToPay',
-        '.basisPrice .a-offscreen',
-        '#acrPopover',
-        '.a-icon-alt',
-        '#acrCustomerReviewText',
-        '#availability .a-color-success',
-        '#merchant-info',
-        '#social-proofing-faceout-title-tk_bought'
-    ].join(',');
-
-    const selectorParam = selectors || defaultSelectors;
-    const encodedProductUrl = encodeURIComponent(productUrl);
-
-    return `${baseUrl}?url=${encodedProductUrl}&selector=${encodeURIComponent(selectorParam)}&scrape=text&pretty=true`;
-}
-
-// Función para limpiar y formatear los datos del scraper
-function formatProductData(rawData) {
-    if (!rawData || !rawData.result) {
-        return { error: 'Datos no válidos' };
-    }
-
-    const { result } = rawData;
-
-    const cleanText = (text) => {
-        if (!text) return '';
-        return String(text)
-            .replace(/&#34;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .trim();
-    };
-
-    const getFirst = (array, defaultValue = '') => {
-        return array && array.length > 0 ? cleanText(array[0]) : defaultValue;
-    };
-
-    const extractPrice = (priceText) => {
-        if (!priceText) return null;
-        const match = String(priceText).match(/(\d+[.,]\d+)/);
-        return match ? parseFloat(match[1].replace(',', '.')) : null;
-    };
-
-    const extractPercentage = (percentageText) => {
-        if (!percentageText) return null;
-        const match = String(percentageText).match(/(-?\d+%)/);
-        return match ? match[1] : null;
-    };
-
-    const extractRating = (ratingText) => {
-        if (!ratingText) return null;
-        const match = String(ratingText).match(/(\d+[.,]\d+)/);
-        return match ? parseFloat(match[1]) : null;
-    };
-
-    return {
-        basic_info: {
-            title: getFirst(result['#productTitle']),
-            brand: getFirst(result['.po-brand .a-span9']),
-            stock: getFirst(result['#availability .a-color-success'], 'Disponible')
-        },
-        prices: {
-            current_price: getFirst(result['.priceToPay']),
-            current_price_number: extractPrice(getFirst(result['.priceToPay'])),
-            original_price: getFirst(result['.basisPrice .a-offscreen']),
-            original_price_number: extractPrice(getFirst(result['.basisPrice .a-offscreen'])),
-            discount_percent: extractPercentage(getFirst(result['.savingsPercentage'])),
-            percent: result['.savingsPercentage'] ? getFirst(result['.savingsPercentage']) : null
-        },
-        features: {
-            special_features: getFirst(result['.po-special_feature .a-span9']),
-            dimensions: getFirst(result['.po-item_depth_width_height .a-span9']),
-            list_features: result['#feature-bullets .a-list-item']
-                ? result['#feature-bullets .a-list-item'].map(cleanText)
-                : []
-        },
-        rates: {
-            rating_stars: extractRating(getFirst(result['.a-icon-alt'])),
-            rating_count: getFirst(result['#acrCustomerReviewText']),
-            frequently_buy: getFirst(result['#social-proofing-faceout-title-tk_bought'])
-        },
-        seller: {
-            info_seller: getFirst(result['#merchant-info'])
-        },
-        metadata: {
-            timestamp: new Date().toISOString(),
-            elements_found: Object.keys(result).length
-        }
-    };
-}
 
 // Función para construir la URL personalizada de Amazon con tag de afiliado
 function buildCustomUrl(handle, productId, tag = 'wizofertas-20', language = 'es_US') {

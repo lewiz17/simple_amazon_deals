@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 
-import { getAmazonProducts, scrapeAmazonProduct } from './utils.js';
+import { getAmazonProducts } from './utils.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -60,13 +60,14 @@ function requireApiKey(req, res, next) {
 // Aplicar el middleware a todas las rutas del router
 apiRouter.use(validateDomain);
 
-// Endpoint 1: Listado de productos (con paginación)
+// Endpoint 1: Listado de productos (con paginación y búsqueda)
 apiRouter.get('/products', requireApiKey, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50;
+        const limit = parseInt(req.query.limit) || 20;
+        const query = req.query.query || req.query.q || '';
 
-        const resultado = await getAmazonProducts(page, limit);
+        const resultado = await getAmazonProducts(page, limit, query);
 
         res.json({
             success: true,
@@ -75,41 +76,6 @@ apiRouter.get('/products', requireApiKey, async (req, res) => {
 
     } catch (error) {
         console.error('❌ Error en endpoint /api/products:', error.message);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// Endpoint 2: Datos de un solo producto
-apiRouter.get('/product', async (req, res) => {
-    try {
-        const { url } = req.query;
-
-        if (!url) {
-            return res.status(400).json({
-                success: false,
-                error: 'El parámetro "url" es requerido'
-            });
-        }
-
-        const resultado = await scrapeAmazonProduct(url);
-
-        if (resultado.success) {
-            res.json({
-                success: true,
-                data: resultado.data
-            });
-        } else {
-            res.status(500).json({
-                success: false,
-                error: resultado.error
-            });
-        }
-
-    } catch (error) {
-        console.error('❌ Error en endpoint /api/product:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
