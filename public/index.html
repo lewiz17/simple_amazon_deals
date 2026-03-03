@@ -4,592 +4,1354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ofertas Especiales del dia</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
+    <title>WizOfertas – Mejores Deals de Amazon Hoy</title>
+    <meta name="description"
+        content="Descubre las mejores ofertas y descuentos de Amazon en tiempo real. Cupones, relámpago, y más. Ahorra más, gasta menos.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    </noscript>
     <style>
-        /* Estilos CSS Puros y Mejoras */
-
-        /* 1. Efecto Neon para el Badge de Descuento */
-        .neon-discount {
-            box-shadow: 0 0 5px rgba(255, 69, 0, 0.9), 0 0 10px rgba(255, 69, 0, 0.7), 0 0 15px rgba(255, 69, 0, 0.5);
-            animation: pulse-neon 2s infinite alternate;
-            font-size: 1.125rem;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        @keyframes pulse-neon {
-            0% {
-                box-shadow: 0 0 5px rgba(255, 69, 0, 0.9);
-            }
-
-            100% {
-                box-shadow: 0 0 15px rgba(255, 69, 0, 1), 0 0 20px rgba(255, 69, 0, 0.8);
-            }
+        :root {
+            --bg: #09090f;
+            --bg2: #0f1020;
+            --bg3: #14162a;
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.14);
+            --accent: #7c6fff;
+            --accent2: #ff5c87;
+            --accent3: #ffb347;
+            --text: #eeeef5;
+            --text2: #888ba0;
+            --green: #00d97e;
+            --red: #ff4060;
+            --yellow: #ffd166;
+            --radius: 14px;
         }
 
-        /* 2. Mejora en la Card y el Glow de Hover */
-        .card-hover {
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        html {
+            scroll-behavior: smooth;
         }
 
-        .card-hover:hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 30px rgba(147, 51, 234, 0.7);
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
         }
 
-        /* Posicionamiento del Badge de Descuento */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 55% 45% at -5% -5%, rgba(124, 111, 255, .16) 0%, transparent 60%),
+                radial-gradient(ellipse 45% 40% at 105% 105%, rgba(255, 92, 135, .12) 0%, transparent 60%);
+        }
+
+        /* ── PAGE ── */
+        .page {
+            position: relative;
+            z-index: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 20px 100px;
+        }
+
+        /* ── HEADER ── */
+        header {
+            text-align: center;
+            padding: 52px 16px 28px;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(124, 111, 255, .12);
+            border: 1px solid rgba(124, 111, 255, .3);
+            border-radius: 100px;
+            padding: 5px 15px;
+            font-size: 11.5px;
+            color: #b8b0ff;
+            font-weight: 600;
+            letter-spacing: .4px;
+            margin-bottom: 16px;
+        }
+
+        header h1 {
+            font-size: clamp(1.75rem, 5.5vw, 3.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 25%, #c4bfff 55%, var(--accent2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: clamp(.9rem, 2vw, 1.05rem);
+            color: var(--text2);
+            max-width: 520px;
+            margin: 0 auto 10px;
+            line-height: 1.65;
+        }
+
+        /* Currency badge */
+        #currency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border-radius: 100px;
+            padding: 5px 14px;
+            font-size: .78rem;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all .4s ease;
+        }
+
+        #currency-badge.loading {
+            color: var(--text2);
+            border: 1px solid var(--border);
+            background: transparent;
+        }
+
+        #currency-badge.ready {
+            color: var(--green);
+            border: 1px solid rgba(0, 217, 126, .25);
+            background: rgba(0, 217, 126, .07);
+        }
+
+        #currency-badge.usd {
+            color: var(--text2);
+            border: 1px solid var(--border);
+            background: transparent;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 26px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stat-num {
+            font-size: 1.45rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: .7rem;
+            color: var(--text2);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+        }
+
+        /* ── SEARCH ── */
+        .search-zone {
+            max-width: 820px;
+            margin: 0 auto 36px;
+        }
+
+        .search-wrap {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text2);
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 13px 90px 13px 44px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            color: var(--text);
+            font-size: .93rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        #search-input::placeholder {
+            color: var(--text2);
+        }
+
+        #search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124, 111, 255, .15);
+        }
+
+        #search-clear {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, .07);
+            border: none;
+            border-radius: 7px;
+            color: var(--text2);
+            cursor: pointer;
+            padding: 5px 10px;
+            font-size: .72rem;
+            display: none;
+            font-family: inherit;
+            transition: all .15s;
+        }
+
+        #search-clear:hover {
+            background: rgba(255, 255, 255, .13);
+            color: var(--text);
+        }
+
+        .filters-row {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .f-sep {
+            width: 1px;
+            height: 18px;
+            background: var(--border);
+            margin: 0 3px;
+        }
+
+        .chip {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 6px 13px;
+            font-size: .77rem;
+            color: var(--text2);
+            cursor: pointer;
+            transition: all .15s;
+            font-weight: 500;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .chip:hover {
+            border-color: rgba(124, 111, 255, .45);
+            color: var(--text);
+        }
+
+        .chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(124, 111, 255, .35);
+        }
+
+        /* ── SAVED ── */
+        #saved-offers-section {
+            margin-bottom: 44px;
+            display: none;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .badge-count {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border-radius: 100px;
+            padding: 1px 9px;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        #clear-saved-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 64, 96, .3);
+            color: var(--red);
+            border-radius: 7px;
+            padding: 4px 11px;
+            font-size: .76rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all .15s;
+            display: none;
+        }
+
+        #clear-saved-btn:hover {
+            background: rgba(255, 64, 96, .1);
+        }
+
+        /* ── GRID ── */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 16px;
+        }
+
+        /* ── CARD ── */
+        .product-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform .22s ease, border-color .22s, box-shadow .22s;
+            content-visibility: auto;
+            contain-intrinsic-size: 0 440px;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(124, 111, 255, .3);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, .55), 0 0 0 1px rgba(124, 111, 255, .18);
+        }
+
+        /* IMAGE AREA */
+        .card-img-wrap {
+            position: relative;
+            /* Forzamos un tamaño fijo de alto para que la imagen se vea bien */
+            height: 200px;
+            background: #181a2a;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 14px;
+            transition: transform .45s ease;
+        }
+
+        .product-card:hover .card-img-wrap img {
+            transform: scale(1.06);
+        }
+
+        /* Overlay suave en la imagen para mayor contraste de badges */
+        .card-img-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, .35) 0%, transparent 40%, transparent 60%, rgba(0, 0, 0, .45) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* DISCOUNT BADGE — siempre encima de todo */
         .discount-badge {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 20;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background: var(--red);
+            color: #fff;
+            font-weight: 800;
+            font-size: .85rem;
+            border-radius: 8px;
+            padding: 4px 10px;
+            line-height: 1;
+            box-shadow: 0 2px 12px rgba(255, 64, 96, .6);
+            animation: badge-pulse 2.8s ease-in-out infinite;
         }
 
-        /* 3. Ajuste del Glassmorphism para mejor contraste */
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        @keyframes badge-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 2px 12px rgba(255, 64, 96, .6);
+            }
+
+            50% {
+                box-shadow: 0 2px 22px rgba(255, 64, 96, .95);
+            }
         }
 
-        /* 4. Spinner de Carga */
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+        /* DEAL TAGS — esquina inferior izquierda, encima del overlay */
+        .deal-badges {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            z-index: 10;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            max-width: 90%;
+        }
+
+        .deal-tag {
+            font-size: .62rem;
+            font-weight: 700;
+            border-radius: 5px;
+            padding: 2px 7px;
+            letter-spacing: .3px;
+            text-transform: uppercase;
+            line-height: 1.4;
+            backdrop-filter: blur(4px);
+        }
+
+        .tag-coupon {
+            background: rgba(0, 217, 126, .18);
+            color: #00d97e;
+            border: 1px solid rgba(0, 217, 126, .3);
+        }
+
+        .tag-lightning {
+            background: rgba(255, 209, 70, .18);
+            color: #ffd166;
+            border: 1px solid rgba(255, 209, 70, .3);
+        }
+
+        .tag-pricedrop {
+            background: rgba(124, 111, 255, .18);
+            color: #c0baff;
+            border: 1px solid rgba(124, 111, 255, .3);
+        }
+
+        .tag-promo {
+            background: rgba(255, 179, 71, .18);
+            color: #ffb347;
+            border: 1px solid rgba(255, 179, 71, .3);
+        }
+
+        .tag-choice {
+            background: rgba(255, 255, 255, .1);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, .18);
+        }
+
+        /* CARD BODY */
+        .card-body {
+            padding: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            flex: 1;
+        }
+
+        .card-category {
+            font-size: .67rem;
+            color: var(--text2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .card-title {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* PRICES */
+        .card-prices {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: auto;
+        }
+
+        .price-usd-row {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .price-now {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--green);
+            line-height: 1;
+        }
+
+        .price-was {
+            font-size: .8rem;
+            color: var(--text2);
+            text-decoration: line-through;
+        }
+
+        .price-pill {
+            background: rgba(0, 217, 126, .1);
+            color: var(--green);
+            border-radius: 5px;
+            padding: 2px 7px;
+            font-size: .72rem;
+            font-weight: 700;
+        }
+
+        /* Local price row */
+        .price-local-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .8rem;
+            color: var(--text2);
+            min-height: 20px;
+            /* evita layout shift cuando carga */
+        }
+
+        .local-flag {
+            font-size: .95rem;
+            line-height: 1;
+        }
+
+        .local-amount {
+            color: var(--accent3);
+            font-weight: 700;
+        }
+
+        .local-note {
+            font-size: .66rem;
+            color: var(--text2);
+            opacity: .7;
+        }
+
+        /* Coupon strip */
+        .coupon-strip {
+            background: rgba(0, 217, 126, .06);
+            border: 1px dashed rgba(0, 217, 126, .25);
+            border-radius: 7px;
+            padding: 5px 9px;
+            font-size: .73rem;
+            color: var(--green);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Rating */
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .72rem;
+            color: var(--text2);
+            flex-wrap: wrap;
+        }
+
+        .stars {
+            color: var(--yellow);
+            letter-spacing: -1px;
+            font-size: .85rem;
+        }
+
+        /* Actions */
+        .card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            padding: 11px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: .87rem;
+            background: linear-gradient(135deg, var(--accent), #9b5de5);
+            color: #fff;
+            transition: box-shadow .2s, transform .2s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .btn-main:hover {
+            box-shadow: 0 5px 18px rgba(124, 111, 255, .5);
+            transform: translateY(-1px);
+        }
+
+        .btn-save {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 8px;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: .76rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text2);
+            cursor: pointer;
+            transition: all .15s;
+            font-family: inherit;
+        }
+
+        .btn-save:hover {
+            border-color: rgba(124, 111, 255, .4);
+            color: var(--text);
+        }
+
+        .btn-save.saved {
+            border-color: rgba(255, 179, 71, .4);
+            color: var(--accent3);
+        }
+
+        .btn-save.saved:hover {
+            border-color: rgba(255, 64, 96, .4);
+            color: var(--red);
+        }
+
+        /* ── ESTADOS ── */
+        #initial-loading,
+        #page-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 13px;
+            padding: 60px 0;
+        }
+
+        #page-loading {
+            display: none;
+            padding: 32px 0;
+        }
+
+        .spinner {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            border-top: 4px solid #f9fafb;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            border: 3px solid var(--bg3);
+            border-top-color: var(--accent);
+            animation: spin .7s linear infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
             }
         }
 
-        /* 5. Imagen con Aspect Ratio */
-        .image-container {
-            width: 100%;
-            aspect-ratio: 1/1;
+        .loading-text {
+            color: var(--text2);
+            font-weight: 600;
+            font-size: .88rem;
         }
 
-        /* 6. Estilo del Input de Búsqueda */
-        #search-input {
-            transition: box-shadow 0.3s ease-in-out;
+        #error-state,
+        #no-results {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
         }
 
-        #search-input:focus {
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
-            /* Glow azul al enfocar */
-            outline: none;
+        .state-icon {
+            font-size: 2.6rem;
+            margin-bottom: 12px;
         }
 
-        /* 7. Estilo para el botón de "Guardado" */
-        .saved-btn {
-            background-color: #f59e0b;
-            /* Color amarillo */
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
-            cursor: default;
+        .state-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .state-sub {
+            color: var(--text2);
+            max-width: 360px;
+            margin: 0 auto 20px;
+            font-size: .88rem;
+        }
+
+        .btn-retry {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 9px;
+            padding: 11px 26px;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        #scroll-sentinel {
+            height: 1px;
+        }
+
+        /* ── TOASTS ── */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, .55);
+            animation: tIn .22s ease;
+        }
+
+        @keyframes tIn {
+            from {
+                transform: translateX(55px);
+                opacity: 0;
+            }
+        }
+
+        .toast.out {
+            animation: tOut .22s ease forwards;
+        }
+
+        @keyframes tOut {
+            to {
+                transform: translateX(55px);
+                opacity: 0;
+            }
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 560px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .card-img-wrap {
+                height: 160px;
+            }
+
+            .price-now {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 340px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 min-h-screen p-4 font-sans antialiased">
-    <div class="container mx-auto max-w-7xl">
+<body>
+    <div class="page">
 
-        <header class="text-center mb-10 pt-12 animate__animated animate__fadeInDown">
-            <h1
-                class="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4 tracking-tight">
-                🔥 Ofertas Destacadas
-            </h1>
-            <p class="text-xl text-indigo-300 max-w-3xl mx-auto italic">
-                Descubre **descuentos exclusivos** y productos de alta calidad a diario.
+        <!-- HEADER -->
+        <header>
+            <div class="logo-badge">⚡ Deals en tiempo real</div>
+            <h1>Las mejores ofertas<br>de Amazon, hoy</h1>
+            <p class="hero-sub">
+                Ahorra hasta un <strong>90%</strong> con cupones exclusivos, ofertas relámpago y precios mínimos
+                históricos — curados cada hora para ti.
             </p>
+            <div id="currency-badge" class="loading">
+                <i class="fa-solid fa-globe fa-spin" style="font-size:.8rem"></i>
+                Detectando tu país...
+            </div>
+            <div class="stats-row">
+                <div class="stat-item"><span class="stat-num" id="stat-products">–</span><span class="stat-label">Deals
+                        disponibles</span></div>
+                <div class="stat-item"><span class="stat-num" id="stat-savings">–</span><span
+                        class="stat-label">Descuento promedio</span></div>
+                <div class="stat-item"><span class="stat-num" id="stat-coupons">–</span><span class="stat-label">Con
+                        cupón activo</span></div>
+            </div>
         </header>
 
-        <div class="mb-12 max-w-xl mx-auto animate__animated animate__fadeInUp">
-            <div class="relative">
-                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-300 z-10"></i>
-                <input type="text" id="search-input" placeholder="Buscar producto por título..."
-                    class="w-full py-4 pl-12 pr-6 text-white text-lg bg-gray-800/50 glass-effect rounded-xl placeholder-blue-300/80 border border-blue-600/50 focus:border-blue-400">
+        <!-- BUSCADOR & FILTROS -->
+        <div class="search-zone">
+            <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" placeholder="Busca por nombre, categoría o marca..."
+                    autocomplete="off" spellcheck="false">
+                <button id="search-clear">✕ Limpiar</button>
+            </div>
+            <div class="filters-row">
+                <button class="chip active" data-filter="all">🌐 Todos</button>
+                <button class="chip" data-filter="coupon">🏷️ Cupón</button>
+                <button class="chip" data-filter="lightning">⚡ Relámpago</button>
+                <button class="chip" data-filter="pricedrop">📉 Bajada precio</button>
+                <button class="chip" data-filter="choice">✅ Choice</button>
+                <div class="f-sep"></div>
+                <button class="chip active" data-price="all">Todos los precios</button>
+                <button class="chip" data-price="under20">&lt; $20</button>
+                <button class="chip" data-price="20-50">$20–$50</button>
+                <button class="chip" data-price="over50">&gt; $50</button>
             </div>
         </div>
 
-        <div id="saved-offers-section" class="mb-16 hidden animate__animated animate__fadeIn">
-            <h2 class="text-4xl font-bold text-white mb-6 text-center lg:text-left">
-                🛒 Tus Ofertas Guardadas
-                <span id="saved-count" class="text-indigo-400 text-2xl ml-2"></span>
-            </h2>
-
-            <div class="flex justify-center lg:justify-start mb-6">
-                <button id="clear-saved-btn"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hidden">
-                    <i class="fas fa-trash-alt mr-2"></i> Limpiar toda la lista
-                </button>
+        <!-- GUARDADOS -->
+        <div id="saved-offers-section">
+            <div class="section-title">
+                🛒 Guardados <span class="badge-count" id="saved-count">0</span>
+                <button id="clear-saved-btn">🗑 Limpiar</button>
             </div>
-
-            <div id="saved-offers-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            </div>
-
-            <div id="no-saved-offers" class="text-center py-8">
-                <i class="fas fa-bookmark text-purple-400 text-6xl mb-4"></i>
-                <h3 class="text-2xl font-bold text-white mb-2">Aún no has guardado ninguna oferta.</h3>
-                <p class="text-purple-200">Usa el botón "Guardar para más tarde" en las ofertas destacadas.</p>
-            </div>
-
-            <hr class="border-purple-700 my-10">
-        </div>
-        <div id="loading" class="flex flex-col justify-center items-center py-24">
-            <div class="loading-spinner"></div>
-            <span class="mt-4 text-white text-xl animate__animated animate__pulse animate__infinite">Cargando ofertas al
-                mejor precio...</span>
+            <div class="products-grid" id="saved-offers-list"></div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:32px 0;">
         </div>
 
-        <div id="error" class="hidden text-center py-12 animate__animated animate__shakeX">
-            <div class="bg-red-900/40 glass-effect rounded-xl p-8 max-w-lg mx-auto shadow-2xl border-red-700">
-                <i class="fas fa-exclamation-triangle text-red-400 text-6xl mb-4"></i>
-                <h2 class="text-3xl font-bold text-white mb-3">¡Algo salió mal!</h2>
-                <p class="text-red-200 mb-6">No pudimos cargar los productos. Intenta nuevamente.</p>
-                <button id="retry-btn"
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg">
-                    Reintentar
-                </button>
-            </div>
+        <!-- ESTADOS -->
+        <div id="no-results">
+            <div class="state-icon">🔍</div>
+            <div class="state-title">Sin resultados</div>
+            <p class="state-sub">Prueba con otro término o quita algún filtro.</p>
+        </div>
+        <div id="initial-loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Cargando los mejores deals... 🔥</div>
+        </div>
+        <div id="error-state">
+            <div class="state-icon">😵</div>
+            <div class="state-title">Algo salió mal</div>
+            <p class="state-sub">No pudimos cargar las ofertas. Verifica tu conexión.</p>
+            <button class="btn-retry" id="retry-btn">Reintentar</button>
         </div>
 
-        <div id="no-results" class="hidden text-center py-16">
-            <i class="fas fa-box-open text-blue-400 text-6xl mb-4"></i>
-            <h2 class="text-3xl font-bold text-white mb-2">Sin coincidencias</h2>
-            <p class="text-blue-200">No encontramos productos que coincidan con tu búsqueda.</p>
+        <!-- GRID -->
+        <div class="products-grid" id="products-grid"></div>
+
+        <div id="page-loading">
+            <div class="spinner"></div>
+            <div class="loading-text">Cargando más deals...</div>
         </div>
 
-        <div id="products-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        </div>
+        <div id="scroll-sentinel"></div>
     </div>
 
+    <div id="toast-container"></div>
+
     <script>
-        // Clave de localStorage para la lista de productos guardados
-        const SAVED_PRODUCTS_KEY = 'savedOffersList';
+        // ── CONFIG ──────────────────────────────────────────────────────────
+        const API_KEY = 'wz-secret-2024';
+        const LIMIT = 24;
+        const SAVED_KEY = 'wiz_saved_v2';
+        const AMZ_TAG = 'wizofertas-20';
 
-        // Almacén global para todos los productos cargados
+        // country → { language, currency, flag, amzCurrency }
+        // amzCurrency: lo que Amazon acepta como param currency=
+        const COUNTRY_MAP = {
+            // Américas
+            US: { language: 'en_US', currency: 'USD', amzCurrency: 'USD', flag: '🇺🇸', name: 'USD' },
+            MX: { language: 'es_US', currency: 'MXN', amzCurrency: 'MXN', flag: '🇲🇽', name: 'MXN' },
+            CO: { language: 'es_US', currency: 'COP', amzCurrency: 'USD', flag: '🇨🇴', name: 'COP' },
+            AR: { language: 'es_US', currency: 'ARS', amzCurrency: 'USD', flag: '🇦🇷', name: 'ARS' },
+            BR: { language: 'pt_BR', currency: 'BRL', amzCurrency: 'BRL', flag: '🇧🇷', name: 'BRL' },
+            CL: { language: 'es_US', currency: 'CLP', amzCurrency: 'USD', flag: '🇨🇱', name: 'CLP' },
+            PE: { language: 'es_US', currency: 'PEN', amzCurrency: 'USD', flag: '🇵🇪', name: 'PEN' },
+            VE: { language: 'es_US', currency: 'USD', amzCurrency: 'USD', flag: '🇻🇪', name: 'USD' },
+            EC: { language: 'es_US', currency: 'USD', amzCurrency: 'USD', flag: '🇪🇨', name: 'USD' },
+            CR: { language: 'es_US', currency: 'CRC', amzCurrency: 'USD', flag: '🇨🇷', name: 'CRC' },
+            GT: { language: 'es_US', currency: 'GTQ', amzCurrency: 'USD', flag: '🇬🇹', name: 'GTQ' },
+            PA: { language: 'es_US', currency: 'USD', amzCurrency: 'USD', flag: '🇵🇦', name: 'USD' },
+            DO: { language: 'es_US', currency: 'DOP', amzCurrency: 'USD', flag: '🇩🇴', name: 'DOP' },
+            HN: { language: 'es_US', currency: 'HNL', amzCurrency: 'USD', flag: '🇭🇳', name: 'HNL' },
+            SV: { language: 'es_US', currency: 'USD', amzCurrency: 'USD', flag: '🇸🇻', name: 'USD' },
+            NI: { language: 'es_US', currency: 'NIO', amzCurrency: 'USD', flag: '🇳🇮', name: 'NIO' },
+            BO: { language: 'es_US', currency: 'BOB', amzCurrency: 'USD', flag: '🇧🇴', name: 'BOB' },
+            PY: { language: 'es_US', currency: 'PYG', amzCurrency: 'USD', flag: '🇵🇾', name: 'PYG' },
+            UY: { language: 'es_US', currency: 'UYU', amzCurrency: 'USD', flag: '🇺🇾', name: 'UYU' },
+            CA: { language: 'en_US', currency: 'CAD', amzCurrency: 'CAD', flag: '🇨🇦', name: 'CAD' },
+            // Europa
+            ES: { language: 'es_ES', currency: 'EUR', amzCurrency: 'EUR', flag: '🇪🇸', name: 'EUR' },
+            DE: { language: 'de_DE', currency: 'EUR', amzCurrency: 'EUR', flag: '🇩🇪', name: 'EUR' },
+            FR: { language: 'fr_FR', currency: 'EUR', amzCurrency: 'EUR', flag: '🇫🇷', name: 'EUR' },
+            IT: { language: 'it_IT', currency: 'EUR', amzCurrency: 'EUR', flag: '🇮🇹', name: 'EUR' },
+            GB: { language: 'en_GB', currency: 'GBP', amzCurrency: 'GBP', flag: '🇬🇧', name: 'GBP' },
+            PT: { language: 'pt_PT', currency: 'EUR', amzCurrency: 'EUR', flag: '🇵🇹', name: 'EUR' },
+            NL: { language: 'nl_NL', currency: 'EUR', amzCurrency: 'EUR', flag: '🇳🇱', name: 'EUR' },
+            SE: { language: 'sv_SE', currency: 'SEK', amzCurrency: 'USD', flag: '🇸🇪', name: 'SEK' },
+            NO: { language: 'en_US', currency: 'NOK', amzCurrency: 'USD', flag: '🇳🇴', name: 'NOK' },
+            CH: { language: 'de_DE', currency: 'CHF', amzCurrency: 'USD', flag: '🇨🇭', name: 'CHF' },
+            // Asia-Pacífico
+            JP: { language: 'ja_JP', currency: 'JPY', amzCurrency: 'JPY', flag: '🇯🇵', name: 'JPY' },
+            AU: { language: 'en_AU', currency: 'AUD', amzCurrency: 'AUD', flag: '🇦🇺', name: 'AUD' },
+            IN: { language: 'hi_IN', currency: 'INR', amzCurrency: 'INR', flag: '🇮🇳', name: 'INR' },
+            KR: { language: 'ko_KR', currency: 'KRW', amzCurrency: 'USD', flag: '🇰🇷', name: 'KRW' },
+            SG: { language: 'en_US', currency: 'SGD', amzCurrency: 'USD', flag: '🇸🇬', name: 'SGD' },
+            MY: { language: 'en_US', currency: 'MYR', amzCurrency: 'USD', flag: '🇲🇾', name: 'MYR' },
+            ZA: { language: 'en_US', currency: 'ZAR', amzCurrency: 'USD', flag: '🇿🇦', name: 'ZAR' },
+        };
+
+        // Tasas de respaldo USD → moneda local
+        const FALLBACK_RATES = {
+            MXN: 17.1, COP: 4100, ARS: 1050, BRL: 5.05, CLP: 950,
+            PEN: 3.73, EUR: 0.92, GBP: 0.79, CAD: 1.36, AUD: 1.53,
+            JPY: 149, KRW: 1325, INR: 83.5, SGD: 1.35, MYR: 4.7,
+            ZAR: 18.8, CRC: 520, GTQ: 7.8, HNL: 24.8, DOP: 57.5,
+            BOB: 6.92, PYG: 7250, UYU: 38.8, NIO: 36.6, SEK: 10.6,
+            NOK: 10.8, CHF: 0.89, NZD: 1.63,
+        };
+
+        // ── ESTADO ────────────────────────────────────────────────────────
         let allProducts = [];
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMore = true;
+        let searchTerm = '';
+        let activeFilter = 'all';
+        let priceFilter = 'all';
+        let debounceTimer;
 
-        // Función auxiliar para eliminar acentos (diacríticos) y convertir a minúsculas
-        function removeAccents(str) {
-            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        // Datos de geo del visitante
+        let geoInfo = null;  // { countryCode, language, currency, amzCurrency, flag, name }
+        let localRate = null;  // tasa USD → moneda local
+
+        // ── UTILS ─────────────────────────────────────────────────────────
+        const norm = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+        function fmtPct(val) {
+            if (val == null || val === '') return null;
+            const n = Math.floor(Math.abs(parseFloat(val)));
+            return isNaN(n) || n === 0 ? null : `-${n}%`;
         }
 
-        // Función para formatear el texto de descuento (ej: '35' -> '-35%')
-        function formatDiscount(discount) {
-            if (!discount) return '';
-            let formatted = String(discount).trim();
-            if (!formatted.startsWith('-')) formatted = `-${formatted}`;
-            if (!formatted.endsWith('%')) formatted += '%';
-            return formatted;
+        function fmtUSD(v) {
+            if (v == null) return null;
+            const n = parseFloat(v);
+            return isNaN(n) ? null : '$' + n.toFixed(2);
         }
 
-        // Función para acortar el título
-        function shortenTitle(title, maxLength = 50) {
-            if (title.length <= maxLength) return title;
-            return title.substring(0, maxLength) + '...';
+        function fmtLocal(usdVal) {
+            if (!localRate || usdVal == null) return null;
+            const amount = parseFloat(usdVal) * localRate;
+            if (isNaN(amount)) return null;
+            // Separadores de miles para monedas sin decimales comunes
+            if (amount >= 1000) return amount.toLocaleString('es', { maximumFractionDigits: 0 });
+            return amount.toLocaleString('es', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
         }
 
-        /**
-         * LÓGICA DE GESTIÓN DE OFERTAS GUARDADAS (LOCALSTORAGE)
-         */
+        // Construye la URL de Amazon localizada con language, currency y tag
+        function buildAmazonUrl(handle, asin) {
+            const h = encodeURIComponent(handle || asin).replace(/%20/g, '+');
+            const lang = geoInfo?.language || 'es_US';
+            const cur = geoInfo?.amzCurrency || 'USD';
+            return `https://www.amazon.com/${h}/dp/${asin}?tag=${AMZ_TAG}&language=${lang}&currency=${cur}`;
+        }
 
-        // 1. Obtiene la lista de ofertas guardadas desde localStorage
-        function getSavedOffers() {
+        function showToast(msg, icon = '✅', color = 'var(--green)') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+            c.appendChild(t);
+            setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 230); }, 2500);
+        }
+
+        // ── GEO + RATES ───────────────────────────────────────────────────
+        async function detectGeo() {
+            const badge = document.getElementById('currency-badge');
             try {
-                const saved = localStorage.getItem(SAVED_PRODUCTS_KEY);
-                return saved ? JSON.parse(saved) : [];
-            } catch (e) {
-                console.error("Error leyendo localStorage:", e);
-                return [];
-            }
-        }
+                // 1. Llamada server-side (sin CORS)
+                const geoRes = await fetch('/api/geo');
+                const geoJson = await geoRes.json();
 
-        // 2. Guarda la lista de ofertas en localStorage
-        function saveOffersToLocalStorage(offers) {
-            try {
-                localStorage.setItem(SAVED_PRODUCTS_KEY, JSON.stringify(offers));
-                renderSavedOffers(); // Volver a dibujar la lista al guardar
-            } catch (e) {
-                console.error("Error escribiendo en localStorage:", e);
-            }
-        }
-
-        // 3. Verifica si un producto ya está guardado (usando 'amznUrl' como identificador único)
-        function isProductSaved(productUrl) {
-            const savedOffers = getSavedOffers();
-            // Asegúrate de que productUrl no sea undefined/null antes de la comparación
-            return savedOffers.some(offer => offer.amznUrl && offer.amznUrl === productUrl);
-        }
-
-        // 4. Agrega un producto a la lista de guardados
-        function addProductToSaved(product) {
-            if (isProductSaved(product.amznUrl)) {
-                console.log("El producto ya está guardado:", product.title);
-                return;
-            }
-
-            const savedOffers = getSavedOffers();
-            savedOffers.push(product);
-            saveOffersToLocalStorage(savedOffers);
-
-            // Actualizar el estado del botón en la lista principal
-            updateSaveButtonState(product.amznUrl, true);
-        }
-
-        // 5. Elimina un producto de la lista de guardados (por su URL única)
-        function removeProductFromSaved(productUrl) {
-            const savedOffers = getSavedOffers();
-            const newOffers = savedOffers.filter(offer => offer.amznUrl !== productUrl);
-
-            saveOffersToLocalStorage(newOffers);
-
-            // Actualizar el estado del botón en la lista principal
-            updateSaveButtonState(productUrl, false);
-        }
-
-        // 6. Limpia toda la lista guardada
-        function clearAllSavedOffers() {
-            localStorage.removeItem(SAVED_PRODUCTS_KEY);
-            renderSavedOffers();
-            // Restablecer todos los botones de la cuadrícula principal a "Guardar"
-            document.querySelectorAll('.save-offer-btn').forEach(btn => {
-                btn.classList.remove('saved-btn');
-                btn.removeAttribute('disabled');
-                btn.innerHTML = `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
-            });
-        }
-
-        // 7. Renderiza la sección de ofertas guardadas
-        function renderSavedOffers() {
-            const savedOffers = getSavedOffers();
-            const listElement = document.getElementById('saved-offers-list');
-            const noOffersElement = document.getElementById('no-saved-offers');
-            const sectionElement = document.getElementById('saved-offers-section');
-            const clearBtn = document.getElementById('clear-saved-btn');
-            const savedCount = document.getElementById('saved-count');
-
-            savedCount.textContent = `(${savedOffers.length})`;
-
-            if (savedOffers.length === 0) {
-                listElement.innerHTML = '';
-                noOffersElement.classList.remove('hidden');
-                clearBtn.classList.add('hidden');
-                sectionElement.classList.add('hidden');
-                return;
-            }
-
-            sectionElement.classList.remove('hidden');
-            noOffersElement.classList.add('hidden');
-            clearBtn.classList.remove('hidden');
-
-            const offersHTML = savedOffers.map(product => createSavedCard(product)).join('');
-            listElement.innerHTML = offersHTML;
-
-            // Agregar event listeners de eliminación para las tarjetas guardadas
-            document.querySelectorAll('.remove-saved-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const urlToRemove = e.currentTarget.dataset.url;
-                    removeProductFromSaved(urlToRemove);
-                });
-            });
-        }
-
-        // 8. Actualiza el texto y estilo del botón de guardar en la cuadrícula principal
-        function updateSaveButtonState(productUrl, isSaved) {
-            // Buscamos el botón por su atributo data-url
-            const button = document.querySelector(`.save-offer-btn[data-url="${productUrl}"]`);
-            if (button) {
-                if (isSaved) {
-                    button.classList.add('saved-btn');
-                    button.setAttribute('disabled', 'true'); // Deshabilitar para evitar múltiples guardados
-                    button.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Guardado`;
-                } else {
-                    button.classList.remove('saved-btn');
-                    button.removeAttribute('disabled');
-                    button.innerHTML = `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
+                if (!geoJson.success || !geoJson.data) {
+                    // localhost o fallo: usar USD
+                    badge.className = 'usd';
+                    badge.innerHTML = '🌐 Precios en USD';
+                    return;
                 }
+
+                const { countryCode } = geoJson.data;
+                const cfg = COUNTRY_MAP[countryCode] || COUNTRY_MAP['US'];
+                geoInfo = { ...cfg, countryCode };
+
+                // 2. Si la moneda local es USD, no necesitamos tasa
+                if (cfg.currency === 'USD') {
+                    badge.className = 'usd';
+                    badge.innerHTML = `${cfg.flag} Precios en USD`;
+                    return;
+                }
+
+                // 3. Obtener tasa de cambio en tiempo real
+                try {
+                    const rateRes = await fetch(`https://open.er-api.com/v6/latest/USD`, {
+                        signal: AbortSignal.timeout(5500)
+                    });
+                    const rateData = await rateRes.json();
+                    localRate = rateData?.rates?.[cfg.currency] || FALLBACK_RATES[cfg.currency] || null;
+                } catch {
+                    localRate = FALLBACK_RATES[cfg.currency] || null;
+                }
+
+                // 4. Actualizar badge
+                badge.className = 'ready';
+                badge.innerHTML = `${cfg.flag} Precios en USD + <strong>${cfg.name}</strong>`;
+
+                // 5. Si hay productos ya cargados, re-renderizar
+                if (allProducts.length > 0) applyFilters();
+
+            } catch (err) {
+                console.warn('geo error:', err);
+                badge.className = 'usd';
+                badge.innerHTML = '🌐 Precios en USD';
             }
         }
 
-        /**
-         * FUNCIONES DE CREACIÓN DE CARDS
-         */
+        // ── LOCALSTORAGE ──────────────────────────────────────────────────
+        function getSaved() { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch { return []; } }
+        function setSaved(l) { localStorage.setItem(SAVED_KEY, JSON.stringify(l)); renderSaved(); }
+        function isSaved(id) { return getSaved().some(p => p.asin === id); }
 
-        // Función para crear la card de producto (usada en la cuadrícula principal)
-        function createProductCard(product) {
-            const isSaved = isProductSaved(product.amznUrl);
-            const buttonClass = isSaved ? 'saved-btn' : 'bg-green-600 hover:bg-green-700';
-            const buttonText = isSaved ? `<i class="fas fa-check-circle mr-2"></i> Guardado` : `<i class="fas fa-bookmark mr-2"></i> Guardar para más tarde`;
-
-            // Necesitamos un identificador único para guardar y eliminar
-            // Usamos JSON.stringify y reemplazamos comillas para asegurar la integridad de data-product
-            const productData = JSON.stringify(product).replace(/"/g, '&quot;');
-
-            return `
-                <div class="card-hover glass-effect rounded-2xl overflow-hidden h-full flex flex-col shadow-2xl animate__animated animate__fadeInUp">
-
-                    <div class="relative image-container overflow-hidden bg-gray-800">
-
-                        <div class="discount-badge">
-                            <span class="neon-discount bg-red-600 text-white font-extrabold px-4 py-2 rounded-full shadow-xl transform rotate-3 inline-block">
-                                ${formatDiscount(product.discount)}
-                            </span>
-                        </div>
-
-                        <div class="absolute inset-0 bg-black/10 transition-colors duration-300"></div>
-
-                        <img
-                            src="${product.image_url}"
-                            alt="${product.title}"
-                            class="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                            onerror="this.src='https://via.placeholder.com/400x400/111827/ffffff?text=Producto+en+Oferta'"
-                        >
-                    </div>
-
-                    <div class="p-5 flex-grow flex flex-col">
-                        <h3 class="text-white font-bold text-xl mb-3 line-clamp-2">
-                            ${shortenTitle(product.title)}
-                        </h3>
-
-                        <p class="text-indigo-200 text-sm mb-5 flex-grow line-clamp-3">
-                            ${product.description || 'Producto en oferta exclusiva. ¡Aprovecha ahora!'}
-                        </p>
-
-                        <div class="mt-auto pt-4 border-t border-white/10 space-y-3">
-                            <button
-                                class="save-offer-btn block w-full text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg ${buttonClass}"
-                                data-product='${productData}'
-                                data-url="${product.amznUrl}"
-                                ${isSaved ? 'disabled' : ''}
-                            >
-                                ${buttonText}
-                            </button>
-
-                            <a
-                                href="${product.amznUrl}"
-                                target="_blank"
-                                class="offer-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.03] shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50"
-                            >
-                                ¡Ver Oferta Ahora!
-                                <i class="fas fa-arrow-circle-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Función para crear la card de producto GUARDADO (para la lista local)
-        function createSavedCard(product) {
-            return `
-                <div class="card-hover glass-effect rounded-2xl overflow-hidden h-full flex flex-col shadow-2xl animate__animated animate__fadeInUp">
-
-                    <div class="relative image-container overflow-hidden bg-gray-800">
-
-                        <div class="discount-badge">
-                            <span class="neon-discount bg-red-600 text-white font-extrabold px-4 py-2 rounded-full shadow-xl transform rotate-3 inline-block">
-                                ${formatDiscount(product.discount)}
-                            </span>
-                        </div>
-
-                        <div class="absolute inset-0 bg-black/10 transition-colors duration-300"></div>
-
-                        <img
-                            src="${product.image_url}"
-                            alt="${product.title}"
-                            class="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                            onerror="this.src='https://via.placeholder.com/400x400/111827/ffffff?text=Producto+en+Oferta'"
-                        >
-                    </div>
-
-                    <div class="p-5 flex-grow flex flex-col">
-                        <h3 class="text-white font-bold text-xl mb-3 line-clamp-2">
-                            ${shortenTitle(product.title)}
-                        </h3>
-
-                        <p class="text-indigo-200 text-sm mb-5 flex-grow line-clamp-3">
-                            ${product.description || 'Producto en oferta exclusiva. ¡Aprovecha ahora!'}
-                        </p>
-
-                        <div class="mt-auto pt-4 border-t border-white/10 space-y-3">
-
-                            <button
-                                class="remove-saved-btn block w-full bg-yellow-600 hover:bg-yellow-700 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg"
-                                data-url="${product.amznUrl}"
-                            >
-                                <i class="fas fa-times-circle mr-2"></i> Eliminar de la lista
-                            </button>
-
-                            <a
-                                href="${product.amznUrl}"
-                                target="_blank"
-                                class="offer-button block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.03] shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-500/50"
-                            >
-                                ¡Ver Oferta Ahora!
-                                <i class="fas fa-arrow-circle-right ml-2"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * LÓGICA DE RENDERIZADO Y FILTRO
-         */
-
-        // Función para renderizar un conjunto de productos (principal)
-        function renderProducts(products) {
-            const productsGrid = document.getElementById('products-grid');
-            const noResultsElement = document.getElementById('no-results');
-
-            if (products.length === 0) {
-                productsGrid.classList.add('hidden');
-                noResultsElement.classList.remove('hidden');
+        function toggleSave(p) {
+            let list = getSaved();
+            if (isSaved(p.asin)) {
+                list = list.filter(x => x.asin !== p.asin);
+                setSaved(list);
+                showToast('Eliminado de guardados', '🗑️', 'var(--red)');
             } else {
-                noResultsElement.classList.add('hidden');
-                productsGrid.classList.remove('hidden');
+                list.push(p);
+                setSaved(list);
+                showToast('¡Guardado para después!', '🔖', 'var(--yellow)');
+            }
+            document.querySelectorAll(`.btn-save[data-asin="${p.asin}"]`).forEach(syncBtn);
+        }
 
-                const productsHTML = products.map(createProductCard).join('');
-                productsGrid.innerHTML = productsHTML;
+        function syncBtn(btn) {
+            const s = isSaved(btn.dataset.asin);
+            btn.classList.toggle('saved', s);
+            btn.textContent = s ? '🔖 Guardado — toca para quitar' : '🔖 Guardar para después';
+        }
 
-                // Agregar listeners a los nuevos botones de 'Guardar para más tarde'
-                document.querySelectorAll('.save-offer-btn').forEach(button => {
-                    // Solo añadir listener si el botón NO está deshabilitado (no está guardado)
-                    if (!button.hasAttribute('disabled')) {
-                        button.addEventListener('click', (e) => {
-                            try {
-                                // Parseamos los datos del producto
-                                const productData = JSON.parse(e.currentTarget.dataset.product.replace(/&quot;/g, '"'));
-                                addProductToSaved(productData);
-                            } catch (error) {
-                                console.error("Error al parsear datos del producto:", error);
-                            }
-                        });
-                    }
+        // ── CARD ──────────────────────────────────────────────────────────
+        function buildTags(p) {
+            let t = '';
+            if (p.has_coupon) t += `<span class="deal-tag tag-coupon">🏷️ Cupón</span>`;
+            if (p.has_lightning_deal) t += `<span class="deal-tag tag-lightning">⚡ Relámpago</span>`;
+            if (p.has_price_drop) t += `<span class="deal-tag tag-pricedrop">📉 Bajada</span>`;
+            if (p.has_promo_code) t += `<span class="deal-tag tag-promo">🎟️ Promo</span>`;
+            if (p.is_amazon_choice) t += `<span class="deal-tag tag-choice">✅ Choice</span>`;
+            return t;
+        }
+
+        function buildLocalBlock(usdVal) {
+            if (!localRate || !geoInfo || geoInfo.currency === 'USD' || usdVal == null) return '';
+            const amount = fmtLocal(usdVal);
+            if (!amount) return '';
+            return `<div class="price-local-row">
+        <span class="local-flag">${geoInfo.flag}</span>
+        <span class="local-amount">${geoInfo.name} ${amount}</span>
+        <span class="local-note">aprox.</span>
+    </div>`;
+        }
+
+        function enc(p) { return JSON.stringify(p).replace(/'/g, "&#39;"); }
+
+        function createCard(p, isSaved_ = false) {
+            const pct = fmtPct(p.discount);
+            const priceNow = fmtUSD(p.price);
+            const priceWas = p.list_price ? fmtUSD(p.list_price) : null;
+            const saved = isSaved(p.asin);
+            const localB = buildLocalBlock(p.price);
+            const imgSrc = p.image_url || 'https://placehold.co/400x400/14162a/444?text=Sin+imagen';
+
+            // Construir URL lazily con geo info actual
+            const amznUrl = buildAmazonUrl(p.handle || p.asin, p.asin);
+
+            const starsN = Math.min(5, Math.max(0, Math.round(p.avg_rating || 0)));
+            const ratingHTML = starsN > 0 ? `
+        <div class="rating-row">
+            <span class="stars">${'★'.repeat(starsN)}${'☆'.repeat(5 - starsN)}</span>
+            <span>${(p.avg_rating || 0).toFixed(1)}</span>
+            ${p.ratings_count ? `<span>(${p.ratings_count.toLocaleString()})</span>` : ''}
+            ${p.bought_past_month ? `<span>· ${p.bought_past_month.toLocaleString()}+ /mes</span>` : ''}
+        </div>` : '';
+
+            const saveBtn = isSaved_
+                ? `<button class="btn-save saved" data-asin="${p.asin}" data-product='${enc(p)}'>🗑️ Quitar de guardados</button>`
+                : `<button class="btn-save ${saved ? 'saved' : ''}" data-asin="${p.asin}" data-product='${enc(p)}'>${saved ? '🔖 Guardado — toca para quitar' : '🔖 Guardar para después'}</button>`;
+
+            return `<div class="product-card">
+      <div class="card-img-wrap">
+        ${pct ? `<div class="discount-badge">${pct}</div>` : ''}
+        <img src="${imgSrc}"
+             alt="${p.title.substring(0, 80).replace(/"/g, '&quot;')}"
+             loading="lazy" decoding="async"
+             onerror="this.src='https://placehold.co/400x400/14162a/444?text=Sin+imagen'">
+        <div class="deal-badges">${buildTags(p)}</div>
+      </div>
+      <div class="card-body">
+        ${p.category ? `<div class="card-category">${p.category}</div>` : ''}
+        <div class="card-title" title="${p.title.replace(/"/g, '&quot;')}">${p.title}</div>
+        <div class="card-prices">
+          <div class="price-usd-row">
+            ${priceNow ? `<span class="price-now">${priceNow}</span>` : ''}
+            ${priceWas ? `<span class="price-was">${priceWas}</span>` : ''}
+            ${pct ? `<span class="price-pill">${pct}</span>` : ''}
+          </div>
+          ${localB}
+        </div>
+        ${p.coupon_value ? `<div class="coupon-strip">🏷️ Cupón: ahorra ${p.coupon_value} adicional</div>` : ''}
+        ${ratingHTML}
+        <div class="card-actions">
+          <a href="${amznUrl}" target="_blank" rel="noopener sponsored" class="btn-main">
+            <i class="fa-solid fa-bolt"></i> Ver oferta en Amazon
+          </a>
+          ${saveBtn}
+        </div>
+      </div>
+    </div>`;
+        }
+
+        // ── SAVED SECTION ─────────────────────────────────────────────────
+        function renderSaved() {
+            const list = getSaved();
+            const section = document.getElementById('saved-offers-section');
+            const grid = document.getElementById('saved-offers-list');
+            const count = document.getElementById('saved-count');
+            const clearBtn = document.getElementById('clear-saved-btn');
+            count.textContent = list.length;
+            if (!list.length) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+            clearBtn.style.display = 'inline-block';
+            grid.innerHTML = list.map(p => createCard(p, true)).join('');
+            attachListeners(grid);
+        }
+
+        function attachListeners(container) {
+            container.querySelectorAll('.btn-save').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    try { toggleSave(JSON.parse(btn.dataset.product.replace(/&#39;/g, "'"))); }
+                    catch (e) { console.error(e); }
                 });
-            }
-        }
-
-        // Función para filtrar los productos (LÓGICA DE BÚSQUEDA INSENSIBLE A ACENTOS)
-        function filterProducts(searchTerm) {
-            const normalizedTerm = removeAccents(searchTerm);
-
-            if (normalizedTerm === '') {
-                renderProducts(allProducts);
-                return;
-            }
-
-            const filtered = allProducts.filter(product => {
-                if (!product.title) return false;
-
-                const normalizedTitle = removeAccents(product.title);
-
-                return normalizedTitle.includes(normalizedTerm);
             });
-
-            renderProducts(filtered);
         }
 
-        // Función principal para cargar los productos desde la API
-        async function loadProducts() {
-            const loadingElement = document.getElementById('loading');
-            const errorElement = document.getElementById('error');
-            const productsGrid = document.getElementById('products-grid');
+        // ── STATS ────────────────────────────────────────────────────────
+        function updateStats() {
+            const n = allProducts.length;
+            const avg = n ? Math.floor(allProducts.reduce((s, p) => s + Math.abs(parseFloat(p.discount || 0)), 0) / n) : 0;
+            const coupons = allProducts.filter(p => p.has_coupon).length;
+            document.getElementById('stat-products').textContent = n + '+';
+            document.getElementById('stat-savings').textContent = avg + '%';
+            document.getElementById('stat-coupons').textContent = coupons + '+';
+        }
 
+        // ── FILTROS + RENDER ──────────────────────────────────────────────
+        function applyFilters() {
+            const term = norm(searchTerm);
+            const isFiltering = term || activeFilter !== 'all' || priceFilter !== 'all';
+
+            const toShow = isFiltering ? allProducts.filter(p => {
+                if (term) {
+                    if (!norm(`${p.title} ${p.category || ''} ${p.merchant_name || ''}`).includes(term)) return false;
+                }
+                if (activeFilter === 'coupon' && !p.has_coupon) return false;
+                if (activeFilter === 'lightning' && !p.has_lightning_deal) return false;
+                if (activeFilter === 'pricedrop' && !p.has_price_drop) return false;
+                if (activeFilter === 'choice' && !p.is_amazon_choice) return false;
+                const price = p.price || 0;
+                if (priceFilter === 'under20' && price >= 20) return false;
+                if (priceFilter === '20-50' && (price < 20 || price > 50)) return false;
+                if (priceFilter === 'over50' && price <= 50) return false;
+                return true;
+            }) : allProducts;
+
+            const grid = document.getElementById('products-grid');
+            const noResults = document.getElementById('no-results');
+
+            if (!toShow.length && isFiltering) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+                grid.innerHTML = toShow.map(p => createCard(p)).join('');
+                attachListeners(grid);
+            }
+        }
+
+        // ── APPEND (infinite scroll) ──────────────────────────────────────
+        function appendProducts(products) {
+            const grid = document.getElementById('products-grid');
+            const frag = document.createDocumentFragment();
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.innerHTML = createCard(p);
+                const card = div.firstElementChild;
+                frag.appendChild(card);
+            });
+            grid.appendChild(frag);
+            // Fade-in ligero
+            requestAnimationFrame(() => {
+                const newCards = Array.from(grid.children).slice(-products.length);
+                newCards.forEach((c, i) => {
+                    c.style.opacity = '0'; c.style.transform = 'translateY(14px)';
+                    setTimeout(() => {
+                        c.style.transition = 'opacity .28s ease, transform .28s ease';
+                        c.style.opacity = '1'; c.style.transform = '';
+                    }, i * 28);
+                });
+                attachListeners(grid);
+            });
+        }
+
+        // ── API ───────────────────────────────────────────────────────────
+        async function fetchPage(page) {
+            const res = await fetch(`/api/products?page=${page}&limit=${LIMIT}`, {
+                headers: { 'X-API-Key': API_KEY }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            if (!json.success) throw new Error(json.error || 'API error');
+            return json.data;
+        }
+
+        async function loadFirstPage() {
+            document.getElementById('initial-loading').style.display = 'flex';
+            document.getElementById('error-state').style.display = 'none';
+            document.getElementById('products-grid').innerHTML = '';
+            allProducts = []; currentPage = 1; hasMore = true;
             try {
-                loadingElement.classList.remove('hidden');
-                productsGrid.classList.add('hidden');
-                errorElement.classList.add('hidden');
-                document.getElementById('no-results').classList.add('hidden');
-
-                // Uso del endpoint original: fetch('/api/products')
-                const response = await fetch('/api/products');
-
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.success && data.data && data.data.products) {
-
-                    // Almacenar todos los productos en la variable global
-                    allProducts = data.data.products;
-
-                    loadingElement.classList.add('hidden');
-
-                    // Renderizar la lista principal y la lista de guardados
-                    renderProducts(allProducts);
-                    renderSavedOffers();
-
-                    productsGrid.classList.add('animate__animated', 'animate__fadeInUp');
-
-                } else {
-                    throw new Error('Formato de respuesta inválido o sin productos');
-                }
-
-            } catch (error) {
-                console.error('Error al cargar productos:', error);
-
-                loadingElement.classList.add('hidden');
-                productsGrid.classList.add('hidden');
-                errorElement.classList.remove('hidden');
+                const data = await fetchPage(1);
+                document.getElementById('initial-loading').style.display = 'none';
+                if (!data.products?.length) { document.getElementById('no-results').style.display = 'block'; return; }
+                allProducts = data.products;
+                hasMore = data.products_count >= LIMIT;
+                updateStats(); applyFilters();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('initial-loading').style.display = 'none';
+                document.getElementById('error-state').style.display = 'block';
             }
         }
 
-        // Inicialización y eventos
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProducts();
+        async function loadNextPage() {
+            if (isLoading || !hasMore) return;
+            if (norm(searchTerm) || activeFilter !== 'all' || priceFilter !== 'all') return;
+            isLoading = true;
+            document.getElementById('page-loading').style.display = 'flex';
+            try {
+                currentPage++;
+                const data = await fetchPage(currentPage);
+                hasMore = data.products_count >= LIMIT;
+                if (data.products?.length) {
+                    allProducts = [...allProducts, ...data.products];
+                    updateStats(); appendProducts(data.products);
+                } else { hasMore = false; }
+            } catch (err) {
+                console.error(err); currentPage--;
+            } finally {
+                isLoading = false;
+                document.getElementById('page-loading').style.display = 'none';
+            }
+        }
 
-            // Configurar botón de reintento
-            document.getElementById('retry-btn').addEventListener('click', loadProducts);
+        // ── INFINITE SCROLL ───────────────────────────────────────────────
+        new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) loadNextPage();
+        }, { rootMargin: '500px' }).observe(document.getElementById('scroll-sentinel'));
 
-            // Configurar botón de limpiar toda la lista
-            document.getElementById('clear-saved-btn').addEventListener('click', clearAllSavedOffers);
-
-
-            // Configurar el input de búsqueda para filtrar al escribir
-            const searchInput = document.getElementById('search-input');
-
-            // Usamos 'input' para filtrar en tiempo real mientras el usuario escribe
-            searchInput.addEventListener('input', (e) => {
-                filterProducts(e.target.value);
+        // ── EVENTOS ───────────────────────────────────────────────────────
+        document.getElementById('search-input').addEventListener('input', e => {
+            searchTerm = e.target.value;
+            document.getElementById('search-clear').style.display = searchTerm ? 'block' : 'none';
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFilters, 300);
+        });
+        document.getElementById('search-clear').addEventListener('click', () => {
+            const inp = document.getElementById('search-input');
+            inp.value = ''; searchTerm = '';
+            document.getElementById('search-clear').style.display = 'none';
+            applyFilters(); inp.focus();
+        });
+        document.querySelectorAll('[data-filter]').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('[data-filter]').forEach(x => x.classList.remove('active'));
+                c.classList.add('active'); activeFilter = c.dataset.filter; applyFilters();
             });
+        });
+        document.querySelectorAll('[data-price]').forEach(c => {
+            c.addEventListener('click', () => {
+                document.querySelectorAll('[data-price]').forEach(x => x.classList.remove('active'));
+                c.classList.add('active'); priceFilter = c.dataset.price; applyFilters();
+            });
+        });
+        document.getElementById('retry-btn').addEventListener('click', loadFirstPage);
+        document.getElementById('clear-saved-btn').addEventListener('click', () => {
+            localStorage.removeItem(SAVED_KEY); renderSaved();
+            showToast('Lista de guardados limpiada', '🗑️', 'var(--red)');
+        });
+
+        // ── INIT ──────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSaved();
+            // Geo + productos en paralelo para no añadir latencia
+            Promise.all([detectGeo(), loadFirstPage()]);
         });
     </script>
 
     <script>
-        // Cargar configuración de analytics desde la API
-        fetch('/api/gaid')
-            .then(response => response.json())
-            .then(data => {
-                if (data.enabled && data.gaId) {
-                    // Inicializar Google Analytics
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', data.gaId);
-                    
-                    // Cargar script
-                    const script = document.createElement('script');
-                    script.src = `https://www.googletagmanager.com/gtag/js?id=${data.gaId}`;
-                    script.async = true;
-                    document.head.appendChild(script);
-                }
-            });
+        // Google Analytics (non-blocking)
+        fetch('/api/gaid').then(r => r.json()).then(d => {
+            if (d.enabled && d.gaId) {
+                window.dataLayer = window.dataLayer || [];
+                function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', d.gaId);
+                const s = document.createElement('script'); s.src = `https://www.googletagmanager.com/gtag/js?id=${d.gaId}`; s.async = true; document.head.appendChild(s);
+            }
+        }).catch(() => { });
     </script>
 </body>
 

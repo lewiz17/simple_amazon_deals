@@ -42,15 +42,31 @@ function validateDomain(req, res, next) {
 
 const apiRouter = express.Router();
 
+// Middleware de seguridad por API Key (solo para /products)
+const API_SECRET_KEY = process.env.API_SECRET_KEY || 'wz-secret-2024';
+
+function requireApiKey(req, res, next) {
+    const origin = req.headers.origin;
+    // Permitir solicitudes sin origin (mismo servidor / SSR)
+    if (!origin) return next();
+
+    const providedKey = req.headers['x-api-key'] || req.query._k;
+    if (providedKey !== API_SECRET_KEY) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    next();
+}
+
 // Aplicar el middleware a todas las rutas del router
 apiRouter.use(validateDomain);
 
-// Endpoint 1: Listado de productos
-apiRouter.get('/products', async (req, res) => {
+// Endpoint 1: Listado de productos (con paginación)
+apiRouter.get('/products', requireApiKey, async (req, res) => {
     try {
-        const API_URL = 'https://r.jina.ai/https://www.amazon.com/deals?language=es_US&_encoding=UTF8&discounts-widget=%22{\%22state\%22:{\%22rangeRefinementFilters\%22:{\%22percentOff\%22:{\%22min\%22:20,\%22max\%22:80}}},\%22version\%22:1}%22';
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
 
-        const resultado = await getAmazonProducts(API_URL);
+        const resultado = await getAmazonProducts(page, limit);
 
         res.json({
             success: true,
@@ -102,21 +118,53 @@ apiRouter.get('/product', async (req, res) => {
 });
 
 
+// Endpoint 3: Geo-detección server-side (sin CORS)
+apiRouter.get('/geo', async (req, res) => {
+    try {
+        // Obtener IP real del cliente (funciona detrás de proxies / Render / Railway)
+        const forwarded = req.headers['x-forwarded-for'];
+        const clientIp = forwarded
+            ? forwarded.split(',')[0].trim()
+            : req.socket?.remoteAddress || req.ip || '';
+
+        // En localhost no hay IP pública — retornar fallback
+        const isLocal = !clientIp || clientIp === '::1' || clientIp === '127.0.0.1' || clientIp === '::ffff:127.0.0.1';
+        if (isLocal) {
+            return res.json({ success: true, data: null, message: 'local' });
+        }
+
+        const geoRes = await axios.get(
+            `http://ip-api.com/json/${clientIp}?fields=status,countryCode,currency,country`,
+            { timeout: 5000 }
+        );
+
+        if (geoRes.data?.status === 'success') {
+            const { countryCode, currency, country } = geoRes.data;
+            res.json({ success: true, data: { countryCode, currency, country } });
+        } else {
+            res.json({ success: false, data: null });
+        }
+    } catch (err) {
+        console.error('❌ Error en /api/geo:', err.message);
+        res.json({ success: false, data: null });
+    }
+});
+
 apiRouter.get('/gaid', async (req, res) => {
     const gaId = process.env.GA_ID;
-    
+
     // Validar formato del GA ID (ej: G-XXXXXXXXXX o UA-XXXXXXXX-X)
     const isValidGaId = gaId && /^(G-|UA-|GTM-)[A-Z0-9-]+$/i.test(gaId);
-    
-    
+
+
     if (!isValidGaId) {
-        return res.status(200).json({ 
+        return res.status(200).json({
             enabled: false,
             message: 'Google Analytics not configured'
         });
     }
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
         enabled: true,
         gaId: gaId,
         measurementId: gaId.startsWith('G-') ? gaId : undefined,
